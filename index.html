@@ -298,85 +298,27 @@
             overflow: hidden;
         }
 
-        /* Banner Post Styles */
-        .post-container.theme-white .post-banner-content { display: none; }
-        .post-container.theme-purple .post-banner-content { 
-            background: linear-gradient(135deg, #8A2387, #E94057, #F27121); 
-            display: flex !important;
-            padding: 30px 20px;
-            min-height: 140px;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .post-container.theme-red .post-banner-content { 
-            background: linear-gradient(135deg, #CB356B, #BD3F32); 
-            display: flex !important;
-            padding: 30px 20px;
-            min-height: 140px;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .post-container.theme-dark .post-banner-content { 
-            background: #242526; 
-            display: flex !important;
-            padding: 30px 20px;
-            min-height: 140px;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-        .post-container.theme-sunset .post-banner-content { 
-            background: linear-gradient(135deg, #ff7e5f, #feb47b); 
-            display: flex !important;
-            padding: 30px 20px;
-            min-height: 140px;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-        }
-
         .post-container .post-banner-content {
-            display: none;
+            padding: 20px 16px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
         }
 
         .post-container .post-banner-content .banner-text {
             color: #ffffff;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: bold;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
             word-wrap: break-word;
             max-width: 100%;
-            line-height: 1.4;
         }
 
-        .post-container.theme-dark .post-banner-content .banner-text {
-            color: #ffffff;
-        }
-
-        .post-container.theme-white .post-banner-content .banner-text.dark-text {
+        .post-container .post-banner-content .banner-text.dark-text {
             color: #050505;
             text-shadow: none;
-        }
-
-        .post-container .post-caption {
-            padding: 0 12px 10px 12px;
-            font-size: 15px;
-            color: #050505;
-            line-height: 1.4;
-        }
-
-        .post-container.theme-white .post-caption {
-            display: block;
-            padding: 0 12px 10px 12px;
-        }
-
-        .post-container.theme-purple .post-caption,
-        .post-container.theme-red .post-caption,
-        .post-container.theme-dark .post-caption,
-        .post-container.theme-sunset .post-caption {
-            display: none;
         }
 
         .post-header {
@@ -384,23 +326,6 @@
             justify-content: space-between;
             align-items: center;
             padding: 10px 12px;
-            background: #ffffff;
-        }
-
-        .post-container.theme-dark .post-header {
-            background: #242526;
-        }
-
-        .post-container.theme-dark .post-author-details h4 {
-            color: #e4e6eb;
-        }
-
-        .post-container.theme-dark .post-time-privacy {
-            color: #b0b3b8;
-        }
-
-        .post-container.theme-dark .post-actions-right {
-            color: #b0b3b8;
         }
 
         .post-user-info {
@@ -451,6 +376,13 @@
             cursor: pointer;
         }
 
+        .post-caption {
+            padding: 0 12px 10px 12px;
+            font-size: 15px;
+            color: #050505;
+            line-height: 1.4;
+        }
+
         .post-media-content {
             width: 100%;
             border-top: 1px solid #f0f2f5;
@@ -481,13 +413,6 @@
             border-bottom: 1px solid #f0f2f5;
             user-select: none;
             cursor: default;
-            background: #ffffff;
-        }
-
-        .post-container.theme-dark .post-stats {
-            background: #242526;
-            color: #b0b3b8;
-            border-bottom-color: #3e4041;
         }
 
         .post-stats-left {
@@ -507,12 +432,6 @@
             padding: 4px 0;
             border-bottom: 1px solid #f0f2f5;
             position: relative;
-            background: #ffffff;
-        }
-
-        .post-container.theme-dark .post-action-buttons {
-            background: #242526;
-            border-bottom-color: #3e4041;
         }
 
         .action-btn {
@@ -537,14 +456,6 @@
 
         .action-btn:active {
             background-color: #f0f2f5;
-        }
-
-        .post-container.theme-dark .action-btn {
-            color: #b0b3b8;
-        }
-
-        .post-container.theme-dark .action-btn:active {
-            background-color: #3a3b3c;
         }
 
         .action-btn.liked {
@@ -584,6 +495,14 @@
         .reaction-icon:hover {
             transform: scale(1.4) translateY(-8px);
         }
+
+        /* Banner Themes */
+        .theme-white .post-banner-content { display: none; }
+        .theme-purple .post-banner-content { background: linear-gradient(135deg, #8A2387, #E94057, #F27121); }
+        .theme-red .post-banner-content { background: linear-gradient(135deg, #CB356B, #BD3F32); }
+        .theme-dark .post-banner-content { background: #242526; }
+        .theme-dark .post-banner-content .banner-text { color: #ffffff; }
+        .theme-sunset .post-banner-content { background: linear-gradient(135deg, #ff7e5f, #feb47b); }
 
         .menu-view {
             background-color: #f0f2f5;
@@ -839,14 +758,6 @@
         .toast-notification.show {
             opacity: 1;
             transform: translateX(-50%) translateY(0);
-        }
-
-        .toast-notification.error {
-            background: rgba(220, 38, 38, 0.9);
-        }
-
-        .toast-notification.success {
-            background: rgba(49, 162, 76, 0.9);
         }
 
         .story-viewer-overlay {
@@ -1206,7 +1117,7 @@
         const CACHE_KEY = 'facebook_feed_cache';
         const CACHE_ORDER_KEY = 'facebook_feed_order';
         const CACHE_TIME_KEY = 'facebook_feed_time';
-        const CACHE_DURATION = 5 * 60 * 1000;
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes
 
         function saveToCache(items, order) {
             try {
@@ -1349,7 +1260,7 @@
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toastNotification');
             toast.textContent = message;
-            toast.className = 'toast-notification ' + type;
+            toast.style.background = type === 'error' ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0, 0, 0, 0.8)';
             toast.classList.add('show');
             clearTimeout(toast._timeout);
             toast._timeout = setTimeout(() => {
@@ -1358,11 +1269,12 @@
         }
 
         // ============================================================
-        // LOAD FEED
+        // LOAD FEED WITH RANDOM ORDER AND CACHE
         // ============================================================
         function loadFeed(forceRefresh = false) {
             if (isFeedLoading) return;
             
+            // Check cache first (if not force refresh)
             if (!forceRefresh) {
                 const cached = loadFromCache();
                 if (cached && cached.items.length > 0) {
@@ -1395,6 +1307,7 @@
                         });
                     }
                     
+                    // Get Telegram messages and merge
                     try {
                         const telegramMessages = await getTelegramMessages();
                         if (telegramMessages.length > 0) {
@@ -1444,12 +1357,16 @@
                         console.error('Telegram fetch error:', telegramError);
                     }
 
+                    // Sort by timestamp (newest first)
                     items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                     
+                    // Create shuffled order
                     shuffledOrder = items.map((_, index) => index);
                     shuffledOrder = shuffleArray(shuffledOrder);
                     
                     feedItems = items;
+                    
+                    // Save to cache
                     saveToCache(items, shuffledOrder);
                     
                     displayedCount = 0;
@@ -1515,13 +1432,12 @@
                 let bannerHTML = '';
 
                 // Check if it's a banner post (has theme and no media)
-                const isBannerPost = theme !== 'theme-white' && (!item.media || item.media === '' || item.contentType === 'text');
-
-                if (isBannerPost) {
+                if (theme !== 'theme-white' && (!item.media || item.media === '')) {
                     // Banner post
+                    const textColor = theme === 'theme-dark' ? '' : 'dark-text';
                     bannerHTML = `
                         <div class="post-banner-content">
-                            <div class="banner-text">${postCaption}</div>
+                            <div class="banner-text ${textColor}">${postCaption}</div>
                         </div>
                     `;
                 } else if (item.contentType === 'video' && item.media) {
@@ -1541,8 +1457,8 @@
                     `;
                 }
 
-                // Show caption only for white theme or when there's no banner
-                const showCaption = (theme === 'theme-white' && postCaption && !item.media) || (theme === 'theme-white' && item.media && postCaption);
+                // For white theme with text, show caption normally
+                const showCaption = (theme === 'theme-white' || item.media) && postCaption;
 
                 htmlContent += `
                     <div class="post-container ${theme}" data-id="${postId}">
@@ -1562,7 +1478,7 @@
                                 </div>
                             </div>
                             <div class="post-actions-right" onclick="event.stopPropagation();">
-                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Options menu', 'info')"><i class="fa-solid fa-ellipsis"></i></a>
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Options menu')"><i class="fa-solid fa-ellipsis"></i></a>
                                 <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();hidePost('${postId}')"><i class="fa-solid fa-xmark"></i></a>
                             </div>
                         </div>
@@ -1635,6 +1551,7 @@
 
             const feedContainer = document.getElementById('feedPostsContainer');
             
+            // Use shuffled order
             const totalItems = feedItems.length;
             if (displayedCount >= totalItems) {
                 allLoaded = true;
@@ -1679,16 +1596,18 @@
 
         function hidePost(postId) {
             if (postId.startsWith('telegram_')) {
-                showToast('Cannot hide Telegram post', 'error');
+                showToast('Cannot hide Telegram post');
                 return;
             }
             database.ref(`feedItems/${postId}`).remove().then(() => {
-                showToast('Post hidden', 'success');
+                showToast('Post hidden');
                 const postElement = document.querySelector(`.post-container[data-id="${postId}"]`);
                 if (postElement) postElement.remove();
+                // Update feedItems and shuffledOrder
                 const index = feedItems.findIndex(item => item._id === postId);
                 if (index !== -1) {
                     feedItems.splice(index, 1);
+                    // Rebuild shuffled order
                     shuffledOrder = feedItems.map((_, idx) => idx);
                     shuffledOrder = shuffleArray(shuffledOrder);
                     saveToCache(feedItems, shuffledOrder);
@@ -1699,7 +1618,7 @@
         }
 
         // ============================================================
-        // FACEBOOK LIKE REACTION - SYNCED WITH FIREBASE
+        // FACEBOOK LIKE REACTION
         // ============================================================
         function handleReaction(postId, emoji) {
             if (!postId) {
@@ -1708,72 +1627,78 @@
             }
 
             if (postId.startsWith('telegram_')) {
-                showToast('Cannot react to Telegram posts', 'error');
+                showToast('Cannot react to Telegram posts');
                 return;
             }
 
             const postRef = database.ref(`feedItems/${postId}`);
             const userEmail = currentUser.email || 'anonymous';
             
-            postRef.transaction((postData) => {
-                if (!postData) return postData;
-                
-                const likedBy = postData.likedBy || {};
-                let newLikesCount = postData.likesCount || 0;
-                let newEmoji = postData.likesEmoji || '👍';
-                
-                if (likedBy[userEmail]) {
-                    delete likedBy[userEmail];
-                    newLikesCount = Math.max(0, newLikesCount - 1);
+            postRef.once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        showToast('Post not found', 'error');
+                        return;
+                    }
                     
-                    const emojiCounts = {};
-                    Object.values(likedBy).forEach(e => {
-                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
-                    });
-                    let maxCount = 0;
-                    for (const [e, count] of Object.entries(emojiCounts)) {
-                        if (count > maxCount) {
-                            maxCount = count;
-                            newEmoji = e;
+                    const postData = snapshot.val();
+                    if (!postData) return;
+                    
+                    const likedBy = postData.likedBy || {};
+                    let newLikesCount = postData.likesCount || 0;
+                    let newEmoji = postData.likesEmoji || '👍';
+                    
+                    if (likedBy[userEmail]) {
+                        delete likedBy[userEmail];
+                        newLikesCount = Math.max(0, newLikesCount - 1);
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
+                        }
+                        if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
+                    } else {
+                        likedBy[userEmail] = emoji || '👍';
+                        newLikesCount += 1;
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
                         }
                     }
-                    if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
-                } else {
-                    likedBy[userEmail] = emoji || '👍';
-                    newLikesCount += 1;
                     
-                    const emojiCounts = {};
-                    Object.values(likedBy).forEach(e => {
-                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
-                    });
-                    let maxCount = 0;
-                    for (const [e, count] of Object.entries(emojiCounts)) {
-                        if (count > maxCount) {
-                            maxCount = count;
-                            newEmoji = e;
-                        }
-                    }
-                }
-                
-                postData.likesCount = newLikesCount;
-                postData.likesEmoji = newEmoji;
-                postData.likedBy = likedBy;
-                
-                return postData;
-            }, (error, committed, snapshot) => {
-                if (error) {
-                    console.error('Reaction error:', error);
-                    showToast('Failed to update like', 'error');
-                    return;
-                }
-                if (committed && snapshot) {
-                    const data = snapshot.val();
-                    const userReaction = data.likedBy ? data.likedBy[userEmail] : null;
-                    updatePostUI(postId, data.likesCount || 0, data.likesEmoji || '👍', userReaction);
+                    updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
+                    
                     const popup = document.getElementById(`reactionPopup-${postId}`);
                     if (popup) popup.classList.remove('show');
-                }
-            });
+                    
+                    postRef.update({
+                        likesCount: newLikesCount,
+                        likesEmoji: newEmoji,
+                        likedBy: likedBy
+                    }).catch((err) => {
+                        console.error('Firebase update error:', err);
+                        showToast('Failed to save like', 'error');
+                    });
+                })
+                .catch((error) => {
+                    console.error('Reaction error:', error);
+                    showToast('Failed to update like', 'error');
+                });
         }
 
         function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
@@ -2064,13 +1989,8 @@
                 return;
             }
             
-            if (page === 'logout') {
-                window.location.href = 'logout.html';
-                return;
-            }
-            
             if (page !== 'home') {
-                showToast(`📱 ${page} page (Coming soon)`, 'info');
+                showToast(`📱 ${page} page (Coming soon)`);
                 history.pushState({ page: page, scrollY: window.scrollY }, '', `#${page}`);
             } else {
                 goHome();
@@ -2177,7 +2097,7 @@
         }
 
         // ============================================================
-        // SWIPE REFRESH
+        // SWIPE REFRESH - Generates new random order
         // ============================================================
         let startY = 0;
         let pulling = false;
@@ -2216,7 +2136,9 @@
                 document.querySelectorAll('.feed-video').forEach(v => v.pause());
                 
                 setTimeout(() => {
+                    // Clear cache and refresh with new random order
                     clearCache();
+                    // Reshuffle the order
                     shuffledOrder = feedItems.map((_, index) => index);
                     shuffledOrder = shuffleArray(shuffledOrder);
                     saveToCache(feedItems, shuffledOrder);
@@ -2232,7 +2154,7 @@
                     refreshIndicator.style.opacity = 0;
                     refreshIndicator.style.transform = `translateX(-50%) translateY(-50px)`;
                     window.scrollTo(0, 0);
-                    showToast('Feed refreshed with new random order! 🔄', 'success');
+                    showToast('Feed refreshed with new random order! 🔄', 'info');
                 }, 800);
             } else {
                 refreshIndicator.style.opacity = 0;
@@ -2288,13 +2210,6 @@
             const likedBy = data.likedBy || {};
             const userReaction = likedBy[userEmail] || null;
             updatePostUI(postId, data.likesCount || 0, data.likesEmoji || '👍', userReaction);
-            
-            // Update feedItems cache
-            const index = feedItems.findIndex(item => item._id === postId);
-            if (index !== -1) {
-                feedItems[index] = { ...feedItems[index], ...data };
-                saveToCache(feedItems, shuffledOrder);
-            }
         });
 
         database.ref('feedItems').on('child_added', (snapshot) => {
@@ -2305,10 +2220,12 @@
                 const exists = feedItems.some(item => item._id === newPost._id);
                 if (!exists) {
                     feedItems.unshift(newPost);
+                    // Rebuild shuffled order
                     shuffledOrder = feedItems.map((_, index) => index);
                     shuffledOrder = shuffleArray(shuffledOrder);
                     saveToCache(feedItems, shuffledOrder);
                     
+                    // Refresh feed to show new post
                     displayedCount = 0;
                     allLoaded = false;
                     const feedContainer = document.getElementById('feedPostsContainer');
