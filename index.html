@@ -870,10 +870,6 @@
             animation: spinRefresh 1s infinite linear;
         }
 
-        .feed-scroll-pos {
-            display: none;
-        }
-
         .infinite-scroll-trigger {
             height: 20px;
             text-align: center;
@@ -921,54 +917,9 @@
             font-size: 11px;
             color: #65676b;
         }
-
-        .loading-shimmer {
-            background: #f0f2f5;
-            border-radius: 8px;
-            padding: 16px;
-            margin-bottom: 10px;
-            animation: shimmerPulse 1.5s infinite;
-        }
-
-        @keyframes shimmerPulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.5; }
-            100% { opacity: 1; }
-        }
-
-        .loading-shimmer .line {
-            height: 12px;
-            background: #e4e6eb;
-            margin: 6px 0;
-            border-radius: 4px;
-        }
-
-        .loading-shimmer .line.short { width: 60%; }
-        .loading-shimmer .line.medium { width: 80%; }
     </style>
 </head>
 <body>
-
-    <script>
-        // --- LOGIN CHECK ON LOAD ---
-        (function checkLoginState() {
-            const isLoggedIn = localStorage.getItem('isLoggedIn');
-            if (!isLoggedIn || isLoggedIn !== 'true') {
-                window.location.replace('login.html');
-            }
-        })();
-
-        // --- PAGE STATE MANAGEMENT ---
-        const pageState = {
-            current: 'home',
-            scrollPositions: {},
-            feedItems: [],
-            displayedCount: 0,
-            batchSize: 10,
-            isLoadingMore: false,
-            allLoaded: false
-        };
-    </script>
 
     <div class="fb-container" id="fbContainer">
         <div class="swipe-refresh-indicator" id="refreshIndicator">
@@ -976,7 +927,7 @@
         </div>
 
         <div class="fb-header">
-            <a href="#" class="fb-logo click-effect" onclick="navigateTo('home')">facebook</a>
+            <a href="#" class="fb-logo click-effect" onclick="goHome()">facebook</a>
             <div class="header-icons">
                 <a href="#" class="icon-btn click-effect" onclick="navigateTo('create-post')"><i class="fa-solid fa-plus"></i></a>
                 <a href="#" class="icon-btn click-effect" onclick="navigateTo('search')"><i class="fa-solid fa-magnifying-glass"></i></a>
@@ -1016,7 +967,7 @@
             </div>
 
             <div class="stories-container">
-                <a href="#" class="story-card create-story click-effect" onclick="navigateTo('story')">
+                <a href="#" class="story-card create-story click-effect" onclick="openStory('story_1')">
                     <div class="create-story-top">
                         <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="My Profile">
                         <div class="add-story-icon-wrap">
@@ -1026,19 +977,19 @@
                     <div class="create-story-bottom">Create story</div>
                 </a>
 
-                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                <a href="#" class="story-card click-effect" onclick="openStory('story_2')">
                     <div class="story-badge-num">1</div>
                     <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Tiya Saha" class="story-bg">
                     <div class="story-name">Tiya Saha</div>
                 </a>
 
-                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                <a href="#" class="story-card click-effect" onclick="openStory('story_3')">
                     <div class="story-badge-num">1</div>
                     <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Rabby Hasan" class="story-bg">
                     <div class="story-name">Rabby Hasan</div>
                 </a>
 
-                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                <a href="#" class="story-card click-effect" onclick="openStory('story_4')">
                     <div class="story-badge-num">2</div>
                     <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" alt="Dibos" class="story-bg">
                     <div class="story-name">Dibos</div>
@@ -1170,11 +1121,8 @@
 
     <script>
         // ============================================================
-        // TELEGRAM & FIREBASE CONFIGURATION
+        // FIREBASE CONFIGURATION
         // ============================================================
-        const TELEGRAM_BOT_TOKEN = '8753538115:AAG5e4VI6JnHFERJVzEYMN4SguQLgBu79ts';
-        const TELEGRAM_CHAT_ID = '-5338253351';
-
         const firebaseConfig = {
             apiKey: "AIzaSyDOJaV7zMLhtA-_z1nkcdbtaa3w7M_0Fh4",
             authDomain: "money-generate-dbab3.firebaseapp.com",
@@ -1190,13 +1138,16 @@
 
         let currentUser = {
             name: 'User',
-            email: ''
+            email: '',
+            uid: ''
         };
 
         function loadCurrentUser() {
             const userEmail = localStorage.getItem('userEmail');
+            const userUid = localStorage.getItem('userUid');
             if (userEmail) {
                 currentUser.email = userEmail;
+                currentUser.uid = userUid || 'anonymous';
                 database.ref('users').once('value').then((snapshot) => {
                     if (snapshot.exists()) {
                         snapshot.forEach((child) => {
@@ -1212,178 +1163,19 @@
         loadCurrentUser();
 
         // ============================================================
-        // GENERATE RANDOM POSTS (Unlimited)
+        // GLOBAL STATE
         // ============================================================
-        const firstNames = ['Rafi', 'Tahsin', 'Nabila', 'Shahriar', 'Anika', 'Farhan', 'Tasnim', 'Rakib', 'Sadia', 'Shakib', 'Nadia', 'Imran', 'Sajib', 'Mou', 'Shimul', 'Ratul', 'Puja', 'Tariq', 'Saba', 'Rashed', 'Jubayer', 'Sami', 'Rifat', 'Tanjim', 'Nayeem', 'Arif', 'Shahin', 'Moni', 'Rina', 'Liton', 'Pavel', 'Shila', 'Sumon', 'Nasrin', 'Jewel', 'Sonia', 'Kamal', 'Nur', 'Lipi', 'Sajal', 'Tithi', 'Rashid', 'Mithun', 'Papiya', 'Raju', 'Champa', 'Shafiq', 'Ruma', 'Babul', 'Hena'];
-        const lastNames = ['Ahmed', 'Hasan', 'Rahman', 'Islam', 'Khan', 'Ali', 'Chowdhury', 'Sarker', 'Miah', 'Begum', 'Sheikh', 'Hossain', 'Mamun', 'Akter', 'Jahan', 'Mahmud', 'Haque', 'Kader', 'Jamil', 'Nur', 'Uddin', 'Karim', 'Jalal', 'Parvez', 'Shah', 'Nabi', 'Siddique', 'Zaman', 'Rashid', 'Rahman'];
-        const postTexts = [
-            'আজকের দিনটা খুব সুন্দর কাটলো! 🌞', 
-            'নতুন কিছু শিখতে ভালো লাগে। 📚', 
-            'বন্ধুদের সাথে সময় কাটানো অনেক মজার। 🎉',
-            'প্রকৃতির সৌন্দর্য দেখে মন ভরে যায়। 🌿',
-            'আমার নতুন প্রজেক্ট শুরু করলাম। 🚀',
-            'আজ খুব সুস্বাদু খাবার খেয়েছি। 🍕',
-            'সকালের কফি আর বই পড়া — পারফেক্ট কম্বো। ☕',
-            'ভালো থাকুন, সুস্থ থাকুন। ❤️',
-            'নতুন স্মার্টফোন কিনলাম! 📱',
-            'গান শুনতে খুব ভালো লাগে। 🎶',
-            'আজ বৃষ্টি হচ্ছে, খুব শীতল আবহাওয়া। 🌧️',
-            'পরিবারের সাথে সময় কাটানো অমূল্য। 👨‍👩‍👧',
-            'স্বপ্ন পূরণের জন্য কাজ করে যাচ্ছি। 💪',
-            'আজকে সিনেমা দেখতে যাবো। 🎬',
-            'কিছু সুন্দর মুহূর্ত ক্যামেরাবন্দী করলাম। 📸',
-            'আমার নতুন বই পড়া শুরু করলাম। 📖',
-            'সমুদ্রের ধারে বসে আছি। 🌊',
-            'আজ খুব ভালো লাগছে! 😊',
-            'সকালে হাটতে বেরিয়েছিলাম। 🚶',
-            'আজ অনেক কাজ করেছি, এখন বিশ্রাম। 😴',
-            'আমার নতুন গাড়ি! 🚗',
-            'বন্ধুর সাথে আড্ডা দিচ্ছি। 🗣️',
-            'রাতের আকাশ দেখতে ভালো লাগে। 🌙',
-            'আজকে খুব গরম পড়েছে। ☀️',
-            'শীতের সকাল খুব মিষ্টি। ❄️',
-            'আমার জীবন আমার নিয়মে চলবে 💪',
-            'সবাই ভালো থেকো 🙏',
-            'আজ অনেক কাজ করেছি 🏃',
-            'নতুন কিছু শুরু করছি ✨',
-            'ভালোবাসা দাও, ভালোবাসা পাও ❤️',
-            'সুন্দর একটা দিন কাটলো 😊',
-            'আমার নতুন ফোন 📱',
-            'সবাইকে শুভ সকাল ☀️',
-            'আজ খুব মজা করলাম 🎊',
-            'জীবন বড় সুন্দর 💫'
-        ];
+        let feedItems = [];
+        let displayedCount = 0;
+        const batchSize = 10;
+        let isLoadingMore = false;
+        let allLoaded = false;
+        let isHomeReloading = false;
 
-        const imageUrls = [
-            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1516634267767-2d1281494eb4?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1523050854058-8df90110c7f1?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1522199755839-a2bacb67c546?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1518020382111-a7b9fbedcd42?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1524230659092-07f99a75c013?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=600&q=80',
-            'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=600&q=80'
-        ];
-
-        const avatarUrls = [
-            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80'
-        ];
-
-        function getRandomItem(arr) {
-            return arr[Math.floor(Math.random() * arr.length)];
-        }
-
-        function getRandomTime() {
-            const hours = Math.floor(Math.random() * 48);
-            if (hours === 0) return 'Just now';
-            if (hours < 24) return hours + ' hours ago';
-            const days = Math.floor(hours / 24);
-            return days + ' day' + (days > 1 ? 's' : '') + ' ago';
-        }
-
-        function generateRandomPost(index) {
-            const name = getRandomItem(firstNames) + ' ' + getRandomItem(lastNames);
-            const avatar = getRandomItem(avatarUrls);
-            const caption = getRandomItem(postTexts);
-            const media = getRandomItem(imageUrls);
-            const isVideo = Math.random() > 0.82;
-            const likesCount = Math.floor(Math.random() * 2500) + 5;
-            const comments = Math.floor(Math.random() * 400) + 1;
-            const isBanner = Math.random() > 0.88;
-            const themes = ['theme-white', 'theme-purple', 'theme-red', 'theme-dark', 'theme-sunset'];
-            const theme = isBanner ? getRandomItem(themes) : 'theme-white';
-            
-            return {
-                type: 'post',
-                name: name,
-                avatar: avatar,
-                time: getRandomTime(),
-                caption: caption + (Math.random() > 0.3 ? ' ✨' : ''),
-                contentType: isVideo ? 'video' : 'image',
-                media: isVideo ? 'https://www.w3schools.com/html/mov_bbb.mp4' : media,
-                poster: isVideo ? getRandomItem(imageUrls) : '',
-                likesCount: likesCount,
-                likesEmoji: '👍',
-                comments: comments,
-                shares: Math.floor(Math.random() * 30),
-                theme: theme,
-                likedBy: {},
-                _id: 'post_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
-            };
-        }
-
-        function generateRandomPymk(index) {
-            const users = [];
-            for (let i = 0; i < 4; i++) {
-                users.push({
-                    name: getRandomItem(firstNames) + ' ' + getRandomItem(lastNames),
-                    img: getRandomItem(avatarUrls)
-                });
-            }
-            return {
-                type: 'pymk',
-                users: users,
-                _id: 'pymk_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
-            };
-        }
-
-        function generateRandomAd(index) {
-            return {
-                type: 'ad',
-                name: 'Sponsored Brand ' + (index + 1),
-                avatar: getRandomItem(avatarUrls),
-                time: 'Promoted',
-                caption: '🚀 Discover amazing creative tools & services built just for you! Click below to learn more.',
-                _id: 'ad_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
-            };
-        }
-
-        function generateFullFeed(count = 1000) {
-            const feed = [];
-            for (let i = 0; i < count; i++) {
-                const r = Math.random();
-                if (r < 0.07 && i < count - 2) {
-                    feed.push(generateRandomPymk(i));
-                } else if (r < 0.10 && i < count - 1) {
-                    feed.push(generateRandomAd(i));
-                } else {
-                    feed.push(generateRandomPost(i));
-                }
-            }
-            return feed;
-        }
-
-        function seedFirebaseIfEmpty() {
-            database.ref('feedItems').once('value').then(snapshot => {
-                if (!snapshot.exists() || snapshot.numChildren() < 500) {
-                    const masterFeed = generateFullFeed(2000);
-                    database.ref('feedItems').set(masterFeed);
-                }
-            });
-        }
-
-        function fetchAllFeedItems(callback) {
+        // ============================================================
+        // FETCH POSTS FROM FIREBASE
+        // ============================================================
+        function fetchFeedFromFirebase(callback) {
             database.ref('feedItems').once('value')
                 .then((snapshot) => {
                     if (snapshot.exists()) {
@@ -1395,7 +1187,8 @@
                         });
                         callback(items);
                     } else {
-                        seedFirebaseIfEmpty();
+                        // Seed initial data
+                        seedFirebaseData();
                         setTimeout(() => {
                             database.ref('feedItems').once('value').then(s => {
                                 const items = [];
@@ -1406,24 +1199,77 @@
                                 });
                                 callback(items);
                             });
-                        }, 800);
+                        }, 1000);
                     }
                 })
                 .catch((error) => {
                     console.error("Firebase fetch error:", error);
-                    seedFirebaseIfEmpty();
-                    setTimeout(() => {
-                        database.ref('feedItems').once('value').then(s => {
-                            const items = [];
-                            s.forEach(c => {
-                                const d = c.val();
-                                d._id = c.key;
-                                items.push(d);
-                            });
-                            callback(items);
-                        });
-                    }, 800);
+                    callback([]);
                 });
+        }
+
+        function seedFirebaseData() {
+            const samplePosts = [
+                {
+                    name: 'Mushfiqur Rahman',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+                    time: '1h ago',
+                    caption: '.com domain lagbe. Ke koto dame dite parben janaben please..',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 12,
+                    likesEmoji: '👍',
+                    comments: 4,
+                    shares: 2,
+                    theme: 'theme-white',
+                    likedBy: {}
+                },
+                {
+                    name: 'SHOPON HASAN PRIYO',
+                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
+                    time: '2h ago',
+                    caption: 'আজকের দিনটা খুব সুন্দর কাটলো! 🌞',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 45,
+                    likesEmoji: '❤️',
+                    comments: 8,
+                    shares: 5,
+                    theme: 'theme-white',
+                    likedBy: {}
+                },
+                {
+                    name: 'Nabila Khan',
+                    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+                    time: '3h ago',
+                    caption: 'বন্ধুদের সাথে সময় কাটানো অনেক মজার। 🎉',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 89,
+                    likesEmoji: '😆',
+                    comments: 15,
+                    shares: 7,
+                    theme: 'theme-white',
+                    likedBy: {}
+                },
+                {
+                    name: 'Rafi Ahmed',
+                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+                    time: '5h ago',
+                    caption: 'নতুন প্রজেক্ট শুরু করলাম! 🚀',
+                    contentType: 'video',
+                    media: 'https://www.w3schools.com/html/mov_bbb.mp4',
+                    poster: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 234,
+                    likesEmoji: '❤️',
+                    comments: 42,
+                    shares: 18,
+                    theme: 'theme-white',
+                    likedBy: {}
+                }
+            ];
+
+            database.ref('feedItems').set(samplePosts);
         }
 
         function shuffleArray(array) {
@@ -1438,7 +1284,7 @@
         // ============================================================
         // SAVE REACTION TO FIREBASE
         // ============================================================
-        function saveReactionToFirebase(postId, emoji, text) {
+        function saveReactionToFirebase(postId, emoji) {
             const postRef = database.ref(`feedItems/${postId}`);
             const userEmail = currentUser.email || 'anonymous';
             
@@ -1451,7 +1297,6 @@
                 let newEmoji = postData.likesEmoji || '👍';
                 
                 if (likedBy[userEmail]) {
-                    // Unlike - remove user's reaction
                     delete likedBy[userEmail];
                     newLikesCount = Math.max(0, newLikesCount - 1);
                     
@@ -1468,8 +1313,7 @@
                     }
                     if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
                 } else {
-                    // Like - add user's reaction
-                    likedBy[userEmail] = emoji;
+                    likedBy[userEmail] = emoji || '👍';
                     newLikesCount += 1;
                     
                     const emojiCounts = {};
@@ -1519,20 +1363,14 @@
         }
 
         // ============================================================
-        // RENDER FEED WITH INFINITE SCROLL
+        // RENDER FEED
         // ============================================================
-        let feedItems = [];
-        let displayedCount = 0;
-        const batchSize = 10;
-        let isLoadingMore = false;
-        let allLoaded = false;
-
         function renderFeed() {
             const feedContainer = document.getElementById('feedPostsContainer');
             feedContainer.innerHTML = '<div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>';
             
-            fetchAllFeedItems((masterFeedItems) => {
-                feedItems = shuffleArray(masterFeedItems);
+            fetchFeedFromFirebase((items) => {
+                feedItems = shuffleArray(items);
                 displayedCount = 0;
                 allLoaded = false;
                 feedContainer.innerHTML = '';
@@ -1572,200 +1410,112 @@
             let htmlContent = '';
             const userEmail = currentUser.email || 'anonymous';
 
-            batch.forEach((item, index) => {
+            batch.forEach((item) => {
                 if (!item) return;
 
-                if (item.type === 'pymk' && item.users) {
-                    let cardsHtml = '';
-                    item.users.forEach(user => {
-                        cardsHtml += `
-                            <div class="pymk-card">
-                                <div class="pymk-img-wrap" onclick="navigateTo('profile')">
-                                    <img src="${user.img}" alt="${user.name}" loading="lazy">
-                                </div>
-                                <div class="pymk-info">
-                                    <h4 class="pymk-name" onclick="navigateTo('profile')">${user.name}</h4>
-                                    <a href="#" class="pymk-add-btn click-effect" onclick="navigateTo('add-friend')">
-                                        <i class="fa-solid fa-user-plus"></i> Add friend
-                                    </a>
-                                </div>
-                            </div>
-                        `;
-                    });
+                const postId = item._id || 'post_' + Math.random().toString(36).substr(2, 6);
+                const postName = item.name || 'User';
+                const postCaption = item.caption || '';
+                const likesCount = item.likesCount || 0;
+                const likesEmoji = item.likesEmoji || '👍';
+                const commentsCount = item.comments || 0;
+                const sharesCount = item.shares || 0;
 
-                    htmlContent += `
-                        <div class="pymk-container">
-                            <div class="pymk-header">
-                                <h3 class="pymk-title">People you may know</h3>
-                                <a href="#" style="color: #65676b; font-size: 18px;" class="click-effect" onclick="navigateTo('more')"><i class="fa-solid fa-ellipsis"></i></a>
-                            </div>
-                            <div class="pymk-cards-scroll">
-                                ${cardsHtml}
-                            </div>
-                            <a href="#" class="pymk-see-all-btn click-effect" onclick="navigateTo('people')">See all</a>
-                        </div>
-                    `;
-                } else if (item.type === 'ad') {
-                    htmlContent += `
-                        <div class="post-container" data-id="${item._id}">
-                            <div class="post-header" onclick="event.stopPropagation();">
-                                <div class="post-user-info">
-                                    <div class="post-avatar-wrap">
-                                        <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80'}" alt="Ad" class="profile-pic"></a>
-                                    </div>
-                                    <div class="post-author-details">
-                                        <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${item.name || 'Sponsored'}</h4></a>
-                                        <div class="post-time-privacy"><span>${item.time || 'Promoted'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="post-caption">${item.caption || ''}</div>
-                            <a href="#" class="animated-ad-box click-effect" onclick="navigateTo('offer')">
-                                <div class="animated-ad-content">
-                                    <h2>Special Offer 50% OFF!</h2>
-                                    <p>Limited time deal. Upgrade today.</p>
-                                    <span style="background:#fff; color:#1877f2; padding:8px 16px; border-radius:20px; font-weight:bold; display:inline-block;">Shop Now</span>
-                                </div>
-                            </a>
-                        </div>
-                    `;
+                const likedBy = item.likedBy || {};
+                const userReaction = likedBy[userEmail] || null;
+
+                let btnIconHTML = '';
+                let btnTextHTML = '';
+                let btnClass = '';
+                
+                if (userReaction) {
+                    btnIconHTML = userReaction;
+                    btnTextHTML = 'Liked';
+                    btnClass = 'liked';
                 } else {
-                    const postTheme = item.theme || 'theme-white';
-                    const isBannerTheme = postTheme !== 'theme-white';
-                    
-                    let mediaHTML = '';
-                    let captionHTML = '';
+                    btnIconHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                    btnTextHTML = 'Like';
+                    btnClass = '';
+                }
 
-                    const likedBy = item.likedBy || {};
-                    const userReaction = likedBy[userEmail] || null;
+                const commentsText = commentsCount + ' comment' + (commentsCount !== 1 ? 's' : '');
 
-                    if (isBannerTheme) {
-                        captionHTML = `
-                            <div class="post-banner">
-                                <div class="post-caption">${item.caption || ''}</div>
-                            </div>
-                        `;
-                    } else {
-                        captionHTML = `<div class="post-caption">${item.caption || ''}</div>`;
-                    }
-
-                    if (item.contentType === 'video' && item.media) {
-                        mediaHTML = `
-                            <div class="post-media-content">
-                                <video controls class="feed-video" poster="${item.poster || ''}" preload="metadata" playsinline>
-                                    <source src="${item.media}" type="video/mp4">
-                                    Your browser does not support video.
-                                </video>
-                            </div>
-                        `;
-                    } else if ((item.contentType === 'image' || item.media) && !isBannerTheme) {
-                        mediaHTML = `
-                            <a href="#" class="post-media-content click-effect" onclick="navigateTo('media')">
-                                <img src="${item.media}" alt="Post media" loading="lazy">
-                            </a>
-                        `;
-                    } else if (item.media && item.media.startsWith('data:') && !isBannerTheme) {
-                        if (item.contentType === 'video') {
-                            mediaHTML = `
-                                <div class="post-media-content">
-                                    <video controls class="feed-video" preload="metadata" playsinline>
-                                        <source src="${item.media}" type="video/mp4">
-                                        Your browser does not support video.
-                                    </video>
-                                </div>
-                            `;
-                        } else {
-                            mediaHTML = `
-                                <div class="post-media-content">
-                                    <img src="${item.media}" alt="Post media" loading="lazy">
-                                </div>
-                            `;
-                        }
-                    }
-
-                    const postId = item._id || 'post_' + index + '_' + Math.random().toString(36).substr(2, 6);
-                    const postName = item.name || 'User';
-                    const postCaption = item.caption || '';
-                    const likesCount = item.likesCount || 0;
-                    const likesEmoji = item.likesEmoji || '👍';
-                    const commentsCount = item.comments || 0;
-                    const sharesCount = item.shares || 0;
-
-                    let btnIconHTML = '';
-                    let btnTextHTML = '';
-                    let btnClass = '';
-                    
-                    if (userReaction) {
-                        btnIconHTML = userReaction;
-                        btnTextHTML = 'Liked';
-                        btnClass = 'liked';
-                    } else {
-                        btnIconHTML = '<i class="fa-regular fa-thumbs-up"></i>';
-                        btnTextHTML = 'Like';
-                        btnClass = '';
-                    }
-
-                    const commentsText = commentsCount + ' comment' + (commentsCount !== 1 ? 's' : '');
-
-                    htmlContent += `
-                        <div class="post-container ${postTheme}" data-id="${postId}">
-                            <div class="post-header" onclick="event.stopPropagation();">
-                                <div class="post-user-info">
-                                    <div class="post-avatar-wrap">
-                                        <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic"></a>
-                                        <div class="online-dot"></div>
-                                    </div>
-                                    <div class="post-author-details">
-                                        <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${postName}</h4></a>
-                                        <div class="post-time-privacy"><span>${item.time || 'Just now'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
-                                    </div>
-                                </div>
-                                <div class="post-actions-right" onclick="event.stopPropagation();">
-                                    <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('options')"><i class="fa-solid fa-ellipsis"></i></a>
-                                    <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('hide')"><i class="fa-solid fa-xmark"></i></a>
-                                </div>
-                            </div>
-
-                            ${captionHTML}
-                            ${mediaHTML}
-
-                            <div class="post-stats" onclick="event.stopPropagation();">
-                                <div class="post-stats-left">
-                                    <div class="post-stat-icons" id="statIcons-${postId}"><span>${likesEmoji}</span></div>
-                                    <span id="statCount-${postId}">${likesCount}</span>
-                                </div>
-                                <div class="post-stats-right"><span>${commentsText}</span></div>
-                            </div>
-
-                            <div class="post-action-buttons" onclick="event.stopPropagation();">
-                                <div class="reaction-popup" id="reactionPopup-${postId}">
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '👍', 'Like')">👍</span>
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '❤️', 'Love')">❤️</span>
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '🫂', 'Care')">🫂</span>
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😆', 'Haha')">😆</span>
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😢', 'Sad')">😢</span>
-                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😡', 'Angry')">😡</span>
-                                </div>
-
-                                <button class="action-btn click-effect ${btnClass}" id="likeBtn-${postId}" 
-                                    onclick="event.stopPropagation();handleSingleLikeClick('${postId}')" 
-                                    onmousedown="event.stopPropagation();startLongPress('${postId}')" 
-                                    onmouseup="event.stopPropagation();cancelLongPress('${postId}')" 
-                                    ontouchstart="event.stopPropagation();startLongPress('${postId}')" 
-                                    ontouchend="event.stopPropagation();cancelLongPress('${postId}')">
-                                    <span id="btnIcon-${postId}">${btnIconHTML}</span> 
-                                    <span id="btnText-${postId}">${btnTextHTML}</span>
-                                </button>
-                                <button class="action-btn click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
-                                    <i class="fa-regular fa-comment"></i> Comment
-                                </button>
-                                <button class="action-btn click-effect" onclick="event.stopPropagation();navigateTo('share')">
-                                    <i class="fa-solid fa-share"></i> Share
-                                </button>
-                            </div>
+                let mediaHTML = '';
+                if (item.contentType === 'video' && item.media) {
+                    mediaHTML = `
+                        <div class="post-media-content">
+                            <video controls class="feed-video" poster="${item.poster || ''}" preload="metadata" playsinline>
+                                <source src="${item.media}" type="video/mp4">
+                                Your browser does not support video.
+                            </video>
                         </div>
+                    `;
+                } else if (item.contentType === 'image' && item.media) {
+                    mediaHTML = `
+                        <a href="#" class="post-media-content click-effect" onclick="event.stopPropagation();navigateTo('media')">
+                            <img src="${item.media}" alt="Post media" loading="lazy">
+                        </a>
                     `;
                 }
+
+                htmlContent += `
+                    <div class="post-container theme-white" data-id="${postId}">
+                        <div class="post-header" onclick="event.stopPropagation();">
+                            <div class="post-user-info">
+                                <div class="post-avatar-wrap">
+                                    <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic"></a>
+                                    <div class="online-dot"></div>
+                                </div>
+                                <div class="post-author-details">
+                                    <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${postName}</h4></a>
+                                    <div class="post-time-privacy"><span>${item.time || 'Just now'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
+                                </div>
+                            </div>
+                            <div class="post-actions-right" onclick="event.stopPropagation();">
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('options')"><i class="fa-solid fa-ellipsis"></i></a>
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('hide')"><i class="fa-solid fa-xmark"></i></a>
+                            </div>
+                        </div>
+
+                        <div class="post-caption">${postCaption}</div>
+                        ${mediaHTML}
+
+                        <div class="post-stats" onclick="event.stopPropagation();">
+                            <div class="post-stats-left">
+                                <div class="post-stat-icons" id="statIcons-${postId}"><span>${likesEmoji}</span></div>
+                                <span id="statCount-${postId}">${likesCount}</span>
+                            </div>
+                            <div class="post-stats-right"><span>${commentsText}</span></div>
+                        </div>
+
+                        <div class="post-action-buttons" onclick="event.stopPropagation();">
+                            <div class="reaction-popup" id="reactionPopup-${postId}">
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '👍')">👍</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '❤️')">❤️</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '🫂')">🫂</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😆')">😆</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😢')">😢</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😡')">😡</span>
+                            </div>
+
+                            <button class="action-btn click-effect ${btnClass}" id="likeBtn-${postId}" 
+                                onclick="event.stopPropagation();handleSingleLikeClick('${postId}')" 
+                                onmousedown="event.stopPropagation();startLongPress('${postId}')" 
+                                onmouseup="event.stopPropagation();cancelLongPress('${postId}')" 
+                                ontouchstart="event.stopPropagation();startLongPress('${postId}')" 
+                                ontouchend="event.stopPropagation();cancelLongPress('${postId}')">
+                                <span id="btnIcon-${postId}">${btnIconHTML}</span> 
+                                <span id="btnText-${postId}">${btnTextHTML}</span>
+                            </button>
+                            <button class="action-btn click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
+                                <i class="fa-regular fa-comment"></i> Comment
+                            </button>
+                            <button class="action-btn click-effect" onclick="event.stopPropagation();navigateTo('share')">
+                                <i class="fa-solid fa-share"></i> Share
+                            </button>
+                        </div>
+                    </div>
+                `;
             });
 
             feedContainer.innerHTML += htmlContent;
@@ -1798,7 +1548,7 @@
         }
 
         // ============================================================
-        // INFINITE SCROLL - Intersection Observer
+        // INFINITE SCROLL
         // ============================================================
         let infiniteObserver = null;
 
@@ -1826,18 +1576,103 @@
         }
 
         // ============================================================
+        // NAVIGATION FUNCTIONS
+        // ============================================================
+        
+        // GO HOME WITHOUT RELOAD
+        function goHome() {
+            const homeView = document.getElementById('homeView');
+            const menuView = document.getElementById('menuView');
+            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
+            
+            menuView.classList.remove('active-view');
+            homeView.classList.add('active-view');
+            navTabs.forEach((tab, index) => {
+                if (index === 0) tab.classList.add('active');
+                else tab.classList.remove('active');
+            });
+            
+            const savedPos = parseInt(localStorage.getItem('homeScrollPosition') || '0');
+            setTimeout(() => {
+                window.scrollTo(0, savedPos);
+            }, 50);
+        }
+
+        function switchView(viewName) {
+            document.querySelectorAll('.feed-video').forEach(v => v.pause());
+            const homeView = document.getElementById('homeView');
+            const menuView = document.getElementById('menuView');
+            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
+
+            if (viewName === 'menu') {
+                localStorage.setItem('homeScrollPosition', window.scrollY);
+                homeView.classList.remove('active-view');
+                menuView.classList.add('active-view');
+                navTabs.forEach((tab, index) => {
+                    if (index === navTabs.length - 1) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                });
+                window.scrollTo(0, 0);
+            } else {
+                menuView.classList.remove('active-view');
+                homeView.classList.add('active-view');
+                navTabs.forEach((tab, index) => {
+                    if (index === 0) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                });
+                const saved = parseInt(localStorage.getItem('homeScrollPosition') || '0');
+                setTimeout(() => window.scrollTo(0, saved), 50);
+            }
+        }
+
+        function toggleMenu() {
+            const menuView = document.getElementById('menuView');
+            if (menuView.classList.contains('active-view')) {
+                switchView('home');
+            } else {
+                switchView('menu');
+            }
+        }
+
+        function navigateTo(page, event) {
+            if (event) event.preventDefault();
+            
+            // Save scroll position before leaving
+            localStorage.setItem('homeScrollPosition', window.scrollY);
+            
+            if (page === 'home') {
+                goHome();
+                return;
+            }
+            
+            // For all other pages, navigate to error.html
+            localStorage.setItem('lastPage', 'home');
+            localStorage.setItem('lastScrollPosition', window.scrollY);
+            window.location.href = 'error.html';
+        }
+
+        // ============================================================
         // POST DETAIL - Opens open.html
         // ============================================================
         function openPostDetail(postId) {
-            // Store post ID and current scroll position before navigating
             localStorage.setItem('postToOpen', postId);
-            localStorage.setItem('lastScrollPosition', window.scrollY);
+            localStorage.setItem('homeScrollPosition', window.scrollY);
             localStorage.setItem('lastPage', 'home');
             window.location.href = 'open.html';
         }
 
         // ============================================================
-        // SINGLE CLICK LIKE/UNLIKE
+        // STORY - Opens view-story.html
+        // ============================================================
+        function openStory(storyId) {
+            localStorage.setItem('storyToView', storyId);
+            localStorage.setItem('homeScrollPosition', window.scrollY);
+            localStorage.setItem('lastPage', 'home');
+            window.location.href = 'view-story.html';
+        }
+
+        // ============================================================
+        // LIKE FUNCTIONS
         // ============================================================
         function handleSingleLikeClick(postId) {
             const btnText = document.getElementById(`btnText-${postId}`);
@@ -1846,16 +1681,16 @@
             const isLiked = btnText.innerText === 'Liked';
             
             if (isLiked) {
-                saveReactionToFirebase(postId, '', '');
+                saveReactionToFirebase(postId, '');
             } else {
-                saveReactionToFirebase(postId, '👍', 'Like');
+                saveReactionToFirebase(postId, '👍');
             }
         }
 
-        function handleReactionFromPopup(postId, emoji, text) {
+        function handleReactionFromPopup(postId, emoji) {
             const popup = document.getElementById(`reactionPopup-${postId}`);
             if (popup) popup.classList.remove('show');
-            saveReactionToFirebase(postId, emoji, text);
+            saveReactionToFirebase(postId, emoji);
         }
 
         let pressTimer = null;
@@ -1874,7 +1709,7 @@
         }
 
         // ============================================================
-        // INTERSECTION OBSERVER FOR VIDEO
+        // VIDEO OBSERVER
         // ============================================================
         function initIntersectionVideoObserver() {
             const allVideos = document.querySelectorAll('.feed-video');
@@ -1959,67 +1794,6 @@
         });
 
         // ============================================================
-        // VIEW SWITCH
-        // ============================================================
-        function switchView(viewName) {
-            document.querySelectorAll('.feed-video').forEach(v => v.pause());
-            const homeView = document.getElementById('homeView');
-            const menuView = document.getElementById('menuView');
-            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
-
-            if (viewName === 'menu') {
-                homeView.classList.remove('active-view');
-                menuView.classList.add('active-view');
-                navTabs.forEach((tab, index) => {
-                    if (index === navTabs.length - 1) tab.classList.add('active');
-                    else tab.classList.remove('active');
-                });
-                window.scrollTo(0, 0);
-            } else {
-                menuView.classList.remove('active-view');
-                homeView.classList.add('active-view');
-                navTabs.forEach((tab, index) => {
-                    if (index === 0) tab.classList.add('active');
-                    else tab.classList.remove('active');
-                });
-                const saved = pageState.scrollPositions['home'] || 0;
-                setTimeout(() => window.scrollTo(0, saved), 50);
-            }
-        }
-
-        function toggleMenu() {
-            const menuView = document.getElementById('menuView');
-            if (menuView.classList.contains('active-view')) {
-                switchView('home');
-            } else {
-                switchView('menu');
-            }
-        }
-
-        // ============================================================
-        // SPA NAVIGATION - All links go to error.html
-        // ============================================================
-        function navigateTo(page, event) {
-            if (event) event.preventDefault();
-            
-            // Save current scroll position
-            pageState.scrollPositions[pageState.current] = window.scrollY;
-            
-            if (page === 'home') {
-                switchView('home');
-                pageState.current = 'home';
-                const saved = pageState.scrollPositions['home'] || 0;
-                setTimeout(() => window.scrollTo(0, saved), 50);
-                return;
-            }
-            
-            // For all other pages, navigate to error.html
-            localStorage.setItem('lastPage', pageState.current);
-            localStorage.setItem('lastScrollPosition', window.scrollY);
-            window.location.href = 'error.html';
-        }
-
-        // ============================================================
         // CLOSE POPUPS ON CLICK OUTSIDE
         // ============================================================
         window.addEventListener('click', (e) => {
@@ -2028,30 +1802,6 @@
                     popup.classList.remove('show');
                 });
             }
-        });
-
-        // ============================================================
-        // INIT
-        // ============================================================
-        window.addEventListener('DOMContentLoaded', () => {
-            // Restore scroll position if coming back from another page
-            const savedPos = localStorage.getItem('lastScrollPosition');
-            const lastPage = localStorage.getItem('lastPage');
-            
-            if (savedPos && lastPage === 'home') {
-                setTimeout(() => {
-                    window.scrollTo(0, parseInt(savedPos));
-                    // Clear after restoring
-                    localStorage.removeItem('lastScrollPosition');
-                    localStorage.removeItem('lastPage');
-                }, 300);
-            }
-            
-            seedFirebaseIfEmpty();
-            setTimeout(() => {
-                renderFeed();
-                setupInfiniteScroll();
-            }, 300);
         });
 
         // ============================================================
@@ -2064,6 +1814,53 @@
             const likedBy = data.likedBy || {};
             const userReaction = likedBy[userEmail] || null;
             updatePostUI(postId, data.likesCount || 0, data.likesEmoji || '👍', userReaction);
+        });
+
+        // ============================================================
+        // BACK BUTTON HANDLER - PREVENT RELOAD
+        // ============================================================
+        window.addEventListener('popstate', function(e) {
+            const homeView = document.getElementById('homeView');
+            const menuView = document.getElementById('menuView');
+            
+            if (!homeView.classList.contains('active-view') && !menuView.classList.contains('active-view')) {
+                // If we're in a sub-page, go back to home without reload
+                goHome();
+                // Restore scroll position
+                const savedPos = parseInt(localStorage.getItem('homeScrollPosition') || '0');
+                setTimeout(() => {
+                    window.scrollTo(0, savedPos);
+                }, 100);
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Restore scroll position
+            const savedPos = localStorage.getItem('homeScrollPosition');
+            if (savedPos) {
+                setTimeout(() => {
+                    window.scrollTo(0, parseInt(savedPos));
+                }, 300);
+            }
+            
+            // Check if coming back from another page
+            const lastPage = localStorage.getItem('lastPage');
+            if (lastPage === 'home') {
+                const pos = localStorage.getItem('lastScrollPosition');
+                if (pos) {
+                    setTimeout(() => {
+                        window.scrollTo(0, parseInt(pos));
+                        localStorage.removeItem('lastScrollPosition');
+                        localStorage.removeItem('lastPage');
+                    }, 400);
+                }
+            }
+            
+            renderFeed();
+            setTimeout(setupInfiniteScroll, 500);
         });
 
         // Push initial state
