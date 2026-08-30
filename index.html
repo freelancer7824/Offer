@@ -292,7 +292,7 @@
             background: #ffffff;
             margin-bottom: 10px;
             border-bottom: 8px solid #f0f2f5;
-            cursor: pointer;
+            cursor: default;
         }
 
         .post-header {
@@ -366,6 +366,7 @@
             display: block;
             text-decoration: none;
             position: relative;
+            cursor: pointer;
         }
 
         .post-media-content img, 
@@ -385,6 +386,7 @@
             color: #65676b;
             border-bottom: 1px solid #f0f2f5;
             user-select: none;
+            cursor: default;
         }
 
         .post-stats-left {
@@ -423,6 +425,7 @@
             user-select: none;
             transition: background 0.2s;
             position: relative;
+            border-radius: 4px;
         }
 
         .action-btn:active {
@@ -917,6 +920,29 @@
         .swipe-refresh-indicator.spinning i {
             animation: spinRefresh 0.8s infinite linear;
         }
+
+        /* Toast notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            max-width: 90%;
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
     </style>
 </head>
 <body>
@@ -925,6 +951,9 @@
         <div class="swipe-refresh-indicator" id="refreshIndicator">
             <i class="fa-solid fa-arrows-rotate"></i>
         </div>
+
+        <!-- Toast Notification -->
+        <div class="toast-notification" id="toastNotification"></div>
 
         <div class="fb-header">
             <a href="#" class="fb-logo click-effect" onclick="goHome()">facebook</a>
@@ -1173,6 +1202,22 @@
         const batchSize = 10;
         let isLoadingMore = false;
         let allLoaded = false;
+        let pressTimer = null;
+        let currentPopupPostId = null;
+
+        // ============================================================
+        // TOAST NOTIFICATION
+        // ============================================================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.style.background = type === 'error' ? 'rgba(220, 38, 38, 0.9)' : 'rgba(0, 0, 0, 0.8)';
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
 
         // ============================================================
         // FETCH POSTS FROM FIREBASE
@@ -1185,7 +1230,6 @@
                         snapshot.forEach((child) => {
                             const data = child.val();
                             data._id = child.key;
-                            // Generate unique IDs for user if not exists
                             if (!data.userId) {
                                 data.userId = 'user_' + Math.random().toString(36).substr(2, 6);
                             }
@@ -1212,6 +1256,7 @@
                 })
                 .catch((error) => {
                     console.error("Firebase fetch error:", error);
+                    showToast('Failed to load posts', 'error');
                     callback([]);
                 });
         }
@@ -1318,7 +1363,7 @@
         }
 
         // ============================================================
-        // FACEBOOK LIKE REACTION
+        // FACEBOOK LIKE REACTION - FIXED
         // ============================================================
         function handleReaction(postId, emoji) {
             const postRef = database.ref(`feedItems/${postId}`);
@@ -1332,10 +1377,13 @@
                 let newLikesCount = postData.likesCount || 0;
                 let newEmoji = postData.likesEmoji || '👍';
                 
+                // Toggle like
                 if (likedBy[userEmail]) {
+                    // Unlike
                     delete likedBy[userEmail];
                     newLikesCount = Math.max(0, newLikesCount - 1);
                     
+                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1349,9 +1397,11 @@
                     }
                     if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
                 } else {
+                    // Like with emoji
                     likedBy[userEmail] = emoji || '👍';
                     newLikesCount += 1;
                     
+                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1371,7 +1421,13 @@
                     likedBy: likedBy
                 }).then(() => {
                     updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
+                    // Close popup after reaction
+                    const popup = document.getElementById(`reactionPopup-${postId}`);
+                    if (popup) popup.classList.remove('show');
                 });
+            }).catch((error) => {
+                console.error('Reaction error:', error);
+                showToast('Failed to update like', 'error');
             });
         }
 
@@ -1479,7 +1535,7 @@
                 let mediaHTML = '';
                 if (item.contentType === 'video' && item.media) {
                     mediaHTML = `
-                        <div class="post-media-content">
+                        <div class="post-media-content" onclick="event.stopPropagation();">
                             <video controls class="feed-video" poster="${item.poster || ''}" preload="metadata" playsinline>
                                 <source src="${item.media}" type="video/mp4">
                                 Your browser does not support video.
@@ -1488,7 +1544,7 @@
                     `;
                 } else if (item.contentType === 'image' && item.media) {
                     mediaHTML = `
-                        <a href="#" class="post-media-content click-effect" onclick="event.stopPropagation();navigateTo('media')">
+                        <a href="#" class="post-media-content click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
                             <img src="${item.media}" alt="Post media" loading="lazy">
                         </a>
                     `;
@@ -1512,12 +1568,14 @@
                                 </div>
                             </div>
                             <div class="post-actions-right" onclick="event.stopPropagation();">
-                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('options')"><i class="fa-solid fa-ellipsis"></i></a>
-                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('hide')"><i class="fa-solid fa-xmark"></i></a>
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Options menu')"><i class="fa-solid fa-ellipsis"></i></a>
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Post hidden')"><i class="fa-solid fa-xmark"></i></a>
                             </div>
                         </div>
 
-                        <div class="post-caption">${postCaption}</div>
+                        <div class="post-caption" onclick="event.stopPropagation();openPostDetail('${postId}')" style="cursor:pointer;">
+                            ${postCaption}
+                        </div>
                         ${mediaHTML}
 
                         <div class="post-stats" onclick="event.stopPropagation();">
@@ -1525,7 +1583,9 @@
                                 <div class="post-stat-icons" id="statIcons-${postId}"><span>${likesEmoji}</span></div>
                                 <span id="statCount-${postId}">${likesCount}</span>
                             </div>
-                            <div class="post-stats-right"><span>${commentsText}</span></div>
+                            <div class="post-stats-right" onclick="event.stopPropagation();openPostDetail('${postId}')" style="cursor:pointer;">
+                                <span>${commentsText}</span>
+                            </div>
                         </div>
 
                         <div class="post-action-buttons" onclick="event.stopPropagation();">
@@ -1542,6 +1602,7 @@
                                 onclick="event.stopPropagation();handleReaction('${postId}', '${userReaction || '👍'}')" 
                                 onmousedown="event.stopPropagation();startLongPress('${postId}')" 
                                 onmouseup="event.stopPropagation();cancelLongPress('${postId}')" 
+                                onmouseleave="event.stopPropagation();cancelLongPress('${postId}')"
                                 ontouchstart="event.stopPropagation();startLongPress('${postId}')" 
                                 ontouchend="event.stopPropagation();cancelLongPress('${postId}')">
                                 <span id="btnIcon-${postId}">${btnIconHTML}</span> 
@@ -1616,7 +1677,7 @@
         }
 
         // ============================================================
-        // NAVIGATION FUNCTIONS
+        // NAVIGATION FUNCTIONS - FIXED: No error.html redirect
         // ============================================================
         
         function goHome() {
@@ -1635,6 +1696,9 @@
             setTimeout(() => {
                 window.scrollTo(0, savedPos);
             }, 50);
+            
+            // Update URL without navigation
+            history.pushState({ page: 'home', scrollY: window.scrollY }, '', '#home');
         }
 
         function switchView(viewName) {
@@ -1652,6 +1716,7 @@
                     else tab.classList.remove('active');
                 });
                 window.scrollTo(0, 0);
+                history.pushState({ page: 'menu' }, '', '#menu');
             } else {
                 menuView.classList.remove('active-view');
                 homeView.classList.add('active-view');
@@ -1661,6 +1726,7 @@
                 });
                 const saved = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
                 setTimeout(() => window.scrollTo(0, saved), 50);
+                history.pushState({ page: 'home', scrollY: window.scrollY }, '', '#home');
             }
         }
 
@@ -1676,15 +1742,18 @@
         function navigateTo(page, event) {
             if (event) event.preventDefault();
             
+            // Save current scroll position
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('lastPage', 'home');
+            sessionStorage.setItem('navigateTo', page);
             
-            if (page === 'home') {
+            // Don't redirect to error.html - show toast and stay on page
+            if (page !== 'home') {
+                showToast(`📱 ${page} page (demo)`);
+                history.pushState({ page: page, scrollY: window.scrollY }, '', `#${page}`);
+            } else {
                 goHome();
-                return;
             }
-            
-            window.location.href = 'error.html';
         }
 
         // ============================================================
@@ -1694,6 +1763,7 @@
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('userId', userId);
             sessionStorage.setItem('lastPage', 'home');
+            // Open profile.html - this is expected behavior
             window.location.href = 'profile.html';
         }
 
@@ -1704,6 +1774,7 @@
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToOpen', postId);
             sessionStorage.setItem('lastPage', 'home');
+            // Open open.html - this is expected behavior
             window.location.href = 'open.html';
         }
 
@@ -1714,6 +1785,7 @@
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToShare', postId);
             sessionStorage.setItem('lastPage', 'home');
+            // Open share.html - this is expected behavior
             window.location.href = 'share.html';
         }
 
@@ -1724,26 +1796,50 @@
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('storyToView', storyId);
             sessionStorage.setItem('lastPage', 'home');
+            // Open view-story.html - this is expected behavior
             window.location.href = 'view-story.html';
         }
 
         // ============================================================
-        // LONG PRESS FOR REACTION POPUP
+        // LONG PRESS FOR REACTION POPUP - FIXED
         // ============================================================
-        let pressTimer = null;
-
         function startLongPress(postId) {
+            if (pressTimer) clearTimeout(pressTimer);
             pressTimer = setTimeout(() => {
                 const popup = document.getElementById(`reactionPopup-${postId}`);
                 if (popup) {
+                    // Close any other open popups
+                    document.querySelectorAll('.reaction-popup').forEach(p => {
+                        if (p.id !== `reactionPopup-${postId}`) p.classList.remove('show');
+                    });
                     popup.classList.add('show');
+                    currentPopupPostId = postId;
                 }
             }, 500);
         }
 
         function cancelLongPress(postId) {
             clearTimeout(pressTimer);
+            pressTimer = null;
+            // Don't close immediately - let user select reaction
         }
+
+        // ============================================================
+        // CLOSE POPUPS ON CLICK OUTSIDE - FIXED
+        // ============================================================
+        document.addEventListener('click', function(e) {
+            // Check if click is outside reaction popups and action buttons
+            const isPopupClick = e.target.closest('.reaction-popup');
+            const isActionBtn = e.target.closest('.action-btn');
+            const isReactionIcon = e.target.closest('.reaction-icon');
+            
+            if (!isPopupClick && !isActionBtn && !isReactionIcon) {
+                document.querySelectorAll('.reaction-popup').forEach(popup => {
+                    popup.classList.remove('show');
+                });
+                currentPopupPostId = null;
+            }
+        });
 
         // ============================================================
         // VIDEO OBSERVER
@@ -1823,6 +1919,7 @@
                     refreshIndicator.style.opacity = 0;
                     refreshIndicator.style.transform = `translateX(-50%) translateY(-50px)`;
                     window.scrollTo(0, 0);
+                    showToast('Feed refreshed! 🔄');
                 }, 800);
             } else {
                 refreshIndicator.style.opacity = 0;
@@ -1831,30 +1928,51 @@
         });
 
         // ============================================================
-        // CLOSE POPUPS ON CLICK OUTSIDE
+        // BACK BUTTON HANDLER - FIXED: Scroll position saved
         // ============================================================
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.action-btn') && !e.target.closest('.reaction-icon')) {
-                document.querySelectorAll('.reaction-popup').forEach(popup => {
-                    popup.classList.remove('show');
-                });
-            }
-        });
+        let isBackNavigation = false;
 
-        // ============================================================
-        // BACK BUTTON HANDLER
-        // ============================================================
         window.addEventListener('popstate', function(e) {
+            isBackNavigation = true;
+            
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
+            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
             
-            if (!homeView.classList.contains('active-view') && !menuView.classList.contains('active-view')) {
-                goHome();
-                const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
+            // Restore scroll position from sessionStorage
+            const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
+            
+            // If we're coming back to home
+            if (!menuView.classList.contains('active-view')) {
+                homeView.classList.add('active-view');
+                menuView.classList.remove('active-view');
+                navTabs.forEach((tab, index) => {
+                    if (index === 0) tab.classList.add('active');
+                    else tab.classList.remove('active');
+                });
+                
+                // Restore scroll position
                 setTimeout(() => {
                     window.scrollTo(0, savedPos);
                 }, 100);
+            } else {
+                // We're in menu, go to home
+                goHome();
             }
+            
+            // Close any open popups
+            document.querySelectorAll('.reaction-popup').forEach(p => p.classList.remove('show'));
+        });
+
+        // Save scroll position on scroll
+        let scrollTimeout;
+        window.addEventListener('scroll', function() {
+            clearTimeout(scrollTimeout);
+            scrollTimeout = setTimeout(() => {
+                if (document.getElementById('homeView').classList.contains('active-view')) {
+                    sessionStorage.setItem('homeScrollPosition', window.scrollY);
+                }
+            }, 200);
         });
 
         // ============================================================
@@ -1896,7 +2014,7 @@
         });
 
         // Push initial state
-        history.pushState({ page: 'home' }, '', '#');
+        history.pushState({ page: 'home' }, '', '#home');
     </script>
 </body>
 </html>
