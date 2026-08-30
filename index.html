@@ -1048,6 +1048,10 @@
             appId: "1:579756089926:web:abbe35377e3657889be047"
         };
 
+        // Telegram Configuration
+        const TELEGRAM_BOT_TOKEN = '8753538115:AAG5e4VI6JnHFERJVzEYMN4SguQLgBu79ts';
+        const TELEGRAM_CHAT_ID = '-5338253351';
+
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
         const auth = firebase.auth();
@@ -1073,7 +1077,38 @@
         let isStoriesLoading = false;
 
         // ============================================================
-        // AUTHENTICATION - Redirect to login if not logged in
+        // TELEGRAM FUNCTIONS - Fetch media from Telegram
+        // ============================================================
+        async function getTelegramFileUrl(fileId) {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getFile?file_id=${fileId}`);
+                const data = await response.json();
+                if (data.ok && data.result.file_path) {
+                    return `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${data.result.file_path}`;
+                }
+                return null;
+            } catch (error) {
+                console.error('Telegram API error:', error);
+                return null;
+            }
+        }
+
+        async function getTelegramMessages() {
+            try {
+                const response = await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?chat_id=${TELEGRAM_CHAT_ID}&limit=50`);
+                const data = await response.json();
+                if (data.ok) {
+                    return data.result;
+                }
+                return [];
+            } catch (error) {
+                console.error('Telegram fetch error:', error);
+                return [];
+            }
+        }
+
+        // ============================================================
+        // AUTHENTICATION
         // ============================================================
         function checkAuth() {
             auth.onAuthStateChanged((user) => {
@@ -1101,7 +1136,6 @@
                     loadFeed();
                     loadStories();
                 } else {
-                    // Create user profile
                     const displayName = user.displayName || 'User';
                     const userData = {
                         name: displayName,
@@ -1156,7 +1190,7 @@
         }
 
         // ============================================================
-        // LOAD FEED FROM FIREBASE - FIXED: No recursion
+        // LOAD FEED FROM FIREBASE with Telegram Media
         // ============================================================
         function loadFeed() {
             if (isFeedLoading) return;
@@ -1166,7 +1200,7 @@
             feedContainer.innerHTML = '<div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>';
             
             database.ref('feedItems').orderByChild('timestamp').once('value')
-                .then((snapshot) => {
+                .then(async (snapshot) => {
                     if (snapshot.exists()) {
                         const items = [];
                         snapshot.forEach((child) => {
@@ -1174,6 +1208,58 @@
                             data._id = child.key;
                             items.push(data);
                         });
+                        
+                        // Get Telegram messages and merge with Firebase data
+                        try {
+                            const telegramMessages = await getTelegramMessages();
+                            if (telegramMessages.length > 0) {
+                                // Process Telegram messages as posts
+                                telegramMessages.forEach((msg) => {
+                                    if (msg.message && msg.message.photo) {
+                                        // It's an image
+                                        const photo = msg.message.photo[msg.message.photo.length - 1];
+                                        items.push({
+                                            _id: 'telegram_' + msg.update_id,
+                                            name: msg.message.chat.title || 'Telegram Channel',
+                                            userId: 'telegram_channel',
+                                            avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                                            time: new Date(msg.message.date * 1000).toLocaleString(),
+                                            caption: msg.message.caption || '',
+                                            contentType: 'image',
+                                            media: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${photo.file_id}`,
+                                            likesCount: 0,
+                                            likesEmoji: '👍',
+                                            comments: 0,
+                                            shares: 0,
+                                            likedBy: {},
+                                            timestamp: msg.message.date * 1000
+                                        });
+                                    } else if (msg.message && msg.message.video) {
+                                        // It's a video
+                                        items.push({
+                                            _id: 'telegram_' + msg.update_id,
+                                            name: msg.message.chat.title || 'Telegram Channel',
+                                            userId: 'telegram_channel',
+                                            avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                                            time: new Date(msg.message.date * 1000).toLocaleString(),
+                                            caption: msg.message.caption || '',
+                                            contentType: 'video',
+                                            media: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${msg.message.video.file_id}`,
+                                            poster: '',
+                                            likesCount: 0,
+                                            likesEmoji: '👍',
+                                            comments: 0,
+                                            shares: 0,
+                                            likedBy: {},
+                                            timestamp: msg.message.date * 1000
+                                        });
+                                    }
+                                });
+                            }
+                        } catch (telegramError) {
+                            console.error('Telegram fetch error:', telegramError);
+                        }
+                        
                         items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
                         feedItems = items;
                         displayedCount = 0;
@@ -1181,12 +1267,73 @@
                         feedContainer.innerHTML = '';
                         loadMorePosts();
                     } else {
-                        feedContainer.innerHTML = `
-                            <div class="no-posts-message">
-                                <i class="fa-regular fa-newspaper"></i>
-                                <p>No posts yet. Create your first post!</p>
-                            </div>
-                        `;
+                        // No posts in Firebase, try loading from Telegram only
+                        try {
+                            const telegramMessages = await getTelegramMessages();
+                            if (telegramMessages.length > 0) {
+                                const items = [];
+                                telegramMessages.forEach((msg) => {
+                                    if (msg.message && msg.message.photo) {
+                                        const photo = msg.message.photo[msg.message.photo.length - 1];
+                                        items.push({
+                                            _id: 'telegram_' + msg.update_id,
+                                            name: msg.message.chat.title || 'Telegram Channel',
+                                            userId: 'telegram_channel',
+                                            avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                                            time: new Date(msg.message.date * 1000).toLocaleString(),
+                                            caption: msg.message.caption || '',
+                                            contentType: 'image',
+                                            media: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${photo.file_id}`,
+                                            likesCount: 0,
+                                            likesEmoji: '👍',
+                                            comments: 0,
+                                            shares: 0,
+                                            likedBy: {},
+                                            timestamp: msg.message.date * 1000
+                                        });
+                                    } else if (msg.message && msg.message.video) {
+                                        items.push({
+                                            _id: 'telegram_' + msg.update_id,
+                                            name: msg.message.chat.title || 'Telegram Channel',
+                                            userId: 'telegram_channel',
+                                            avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                                            time: new Date(msg.message.date * 1000).toLocaleString(),
+                                            caption: msg.message.caption || '',
+                                            contentType: 'video',
+                                            media: `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${msg.message.video.file_id}`,
+                                            poster: '',
+                                            likesCount: 0,
+                                            likesEmoji: '👍',
+                                            comments: 0,
+                                            shares: 0,
+                                            likedBy: {},
+                                            timestamp: msg.message.date * 1000
+                                        });
+                                    }
+                                });
+                                items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                                feedItems = items;
+                                displayedCount = 0;
+                                allLoaded = false;
+                                feedContainer.innerHTML = '';
+                                loadMorePosts();
+                            } else {
+                                feedContainer.innerHTML = `
+                                    <div class="no-posts-message">
+                                        <i class="fa-regular fa-newspaper"></i>
+                                        <p>No posts yet. Create your first post!</p>
+                                    </div>
+                                `;
+                            }
+                        } catch (telegramError) {
+                            console.error('Telegram fetch error:', telegramError);
+                            feedContainer.innerHTML = `
+                                <div class="no-posts-message">
+                                    <i class="fa-regular fa-newspaper"></i>
+                                    <p>No posts yet. Create your first post!</p>
+                                </div>
+                            `;
+                        }
                     }
                     isFeedLoading = false;
                 })
@@ -1210,7 +1357,7 @@
             batch.forEach((item) => {
                 if (!item) return;
 
-                const postId = item._id;
+                const postId = item._id || 'post_' + Math.random().toString(36).substr(2, 6);
                 const postName = item.name || 'User';
                 const userId = item.userId || 'unknown';
                 const postCaption = item.caption || '';
@@ -1387,6 +1534,10 @@
         }
 
         function hidePost(postId) {
+            if (postId.startsWith('telegram_')) {
+                showToast('Cannot hide Telegram post');
+                return;
+            }
             database.ref(`feedItems/${postId}`).remove().then(() => {
                 showToast('Post hidden');
                 const postElement = document.querySelector(`.post-container[data-id="${postId}"]`);
@@ -1398,11 +1549,16 @@
         }
 
         // ============================================================
-        // FACEBOOK LIKE REACTION - FIXED with better error handling
+        // FACEBOOK LIKE REACTION
         // ============================================================
         function handleReaction(postId, emoji) {
             if (!postId) {
                 showToast('Error: Post not found', 'error');
+                return;
+            }
+
+            if (postId.startsWith('telegram_')) {
+                showToast('Cannot react to Telegram posts');
                 return;
             }
 
@@ -1456,14 +1612,11 @@
                         }
                     }
                     
-                    // Update UI immediately (optimistic)
                     updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
                     
-                    // Close popup
                     const popup = document.getElementById(`reactionPopup-${postId}`);
                     if (popup) popup.classList.remove('show');
                     
-                    // Save to Firebase
                     postRef.update({
                         likesCount: newLikesCount,
                         likesEmoji: newEmoji,
@@ -1503,7 +1656,7 @@
         }
 
         // ============================================================
-        // LOAD STORIES FROM FIREBASE - FIXED: No recursion
+        // LOAD STORIES FROM FIREBASE with Telegram
         // ============================================================
         function loadStories() {
             if (isStoriesLoading) return;
@@ -1512,20 +1665,43 @@
             const container = document.getElementById('storiesContainer');
             
             database.ref('stories').orderByChild('timestamp').once('value')
-                .then((snapshot) => {
+                .then(async (snapshot) => {
+                    const stories = [];
                     if (snapshot.exists()) {
-                        const stories = [];
                         snapshot.forEach((child) => {
                             const data = child.val();
                             data._id = child.key;
                             stories.push(data);
                         });
-                        stories.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
-                        storiesData = stories;
-                        renderStories(stories);
-                    } else {
-                        renderStories([]);
                     }
+                    
+                    // Also try to get stories from Telegram
+                    try {
+                        const telegramMessages = await getTelegramMessages();
+                        if (telegramMessages.length > 0) {
+                            telegramMessages.forEach((msg) => {
+                                if (msg.message && (msg.message.photo || msg.message.video)) {
+                                    const media = msg.message.photo ? 
+                                        `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${msg.message.photo[msg.message.photo.length - 1].file_id}` :
+                                        `https://api.telegram.org/file/bot${TELEGRAM_BOT_TOKEN}/${msg.message.video.file_id}`;
+                                    stories.push({
+                                        _id: 'story_telegram_' + msg.update_id,
+                                        name: msg.message.chat.title || 'Telegram Story',
+                                        avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                                        media: media,
+                                        contentType: msg.message.video ? 'video' : 'image',
+                                        timestamp: msg.message.date * 1000
+                                    });
+                                }
+                            });
+                        }
+                    } catch (telegramError) {
+                        console.error('Telegram story fetch error:', telegramError);
+                    }
+                    
+                    stories.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                    storiesData = stories;
+                    renderStories(stories);
                     isStoriesLoading = false;
                 })
                 .catch((error) => {
@@ -1940,7 +2116,7 @@
         });
 
         // ============================================================
-        // LIVE UPDATES - FIXED: No recursive calls
+        // LIVE UPDATES
         // ============================================================
         database.ref('feedItems').on('child_changed', (snapshot) => {
             const data = snapshot.val();
