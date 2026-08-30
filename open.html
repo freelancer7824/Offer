@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Post - Facebook</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            color: #050505;
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .fb-container {
+            width: 100%;
+            max-width: 500px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .click-effect {
+            position: relative;
+            overflow: hidden;
+            transition: opacity 0.15s ease, transform 0.1s ease;
+            cursor: pointer;
+        }
+
+        .click-effect:active {
+            opacity: 0.7;
+            transform: scale(0.97);
+        }
+
+        /* Header */
+        .fb-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            background: #ffffff;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid #ced0d4;
+            gap: 12px;
+        }
+
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: #050505;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: background-color 0.2s;
+        }
+
+        .back-btn:hover {
+            background-color: #f0f2f5;
+        }
+
+        .header-title {
+            font-size: 18px;
+            font-weight: 600;
+            flex: 1;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .icon-btn {
+            width: 36px;
+            height: 36px;
+            background-color: #e4e6eb;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: #050505;
+            cursor: pointer;
+            border: none;
+            text-decoration: none;
+        }
+
+        /* Post Container */
+        .post-detail-container {
+            background: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 16px;
+        }
+
+        .post-user-info {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .profile-pic {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            cursor: pointer;
+        }
+
+        .post-author-details h4 {
+            font-size: 15px;
+            font-weight: 600;
+            color: #050505;
+            cursor: pointer;
+        }
+
+        .post-author-details h4:hover {
+            text-decoration: underline;
+        }
+
+        .post-time-privacy {
+            font-size: 12px;
+            color: #65676b;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 1px;
+        }
+
+        .post-actions-right {
+            display: flex;
+            gap: 12px;
+            color: #65676b;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .post-caption {
+            padding: 0 16px 12px 16px;
+            font-size: 15px;
+            color: #050505;
+            line-height: 1.5;
+        }
+
+        .post-media-content {
+            width: 100%;
+            border-top: 1px solid #f0f2f5;
+            border-bottom: 1px solid #f0f2f5;
+            background: #000000;
+            text-align: center;
+            display: block;
+            position: relative;
+        }
+
+        .post-media-content img,
+        .post-media-content video {
+            width: 100%;
+            height: auto;
+            max-height: 500px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .post-stats {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 16px;
+            font-size: 13px;
+            color: #65676b;
+            border-bottom: 1px solid #f0f2f5;
+            user-select: none;
+        }
+
+        .post-stats-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .post-stat-icons {
+            display: inline-flex;
+            gap: 2px;
+        }
+
+        .post-action-buttons {
+            display: flex;
+            justify-content: space-around;
+            padding: 6px 0;
+            border-bottom: 1px solid #f0f2f5;
+            position: relative;
+        }
+
+        .action-btn {
+            flex: 1;
+            background: none;
+            border: none;
+            padding: 8px 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #65676b;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .action-btn:active {
+            background-color: #f0f2f5;
+        }
+
+        .action-btn.liked {
+            color: #1877f2;
+        }
+
+        .reaction-popup {
+            position: absolute;
+            bottom: 45px;
+            left: 10px;
+            background: #ffffff;
+            border-radius: 35px;
+            padding: 6px 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+            display: flex;
+            gap: 8px;
+            z-index: 500;
+            opacity: 0;
+            transform: scale(0.5) translateY(10px);
+            pointer-events: none;
+            transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .reaction-popup.show {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+            pointer-events: auto;
+        }
+
+        .reaction-icon {
+            font-size: 28px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            display: inline-block;
+        }
+
+        .reaction-icon:hover {
+            transform: scale(1.4) translateY(-8px);
+        }
+
+        /* Comments Section */
+        .comments-section {
+            padding: 12px 16px;
+            background: #ffffff;
+            border-top: 8px solid #f0f2f5;
+        }
+
+        .comments-header {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #050505;
+        }
+
+        .comment-input-wrap {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .comment-input-wrap .profile-pic {
+            width: 32px;
+            height: 32px;
+        }
+
+        .comment-input-wrap input {
+            flex: 1;
+            border: 1px solid #ccd0d5;
+            border-radius: 20px;
+            padding: 8px 15px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.3s;
+        }
+
+        .comment-input-wrap input:focus {
+            border-color: #1877f2;
+        }
+
+        .comment-input-wrap .send-btn {
+            background: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .comment-input-wrap .send-btn:active {
+            background: #166fe5;
+        }
+
+        .comment-item {
+            display: flex;
+            gap: 10px;
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f2f5;
+        }
+
+        .comment-item:last-child {
+            border-bottom: none;
+        }
+
+        .comment-item .profile-pic {
+            width: 32px;
+            height: 32px;
+            flex-shrink: 0;
+        }
+
+        .comment-body {
+            flex: 1;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            font-size: 13px;
+            color: #050505;
+        }
+
+        .comment-text {
+            font-size: 14px;
+            color: #050505;
+            margin: 2px 0;
+        }
+
+        .comment-time {
+            font-size: 11px;
+            color: #65676b;
+        }
+
+        .comment-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 4px;
+        }
+
+        .comment-actions button {
+            background: none;
+            border: none;
+            font-size: 12px;
+            color: #65676b;
+            cursor: pointer;
+            font-weight: 600;
+            padding: 2px 4px;
+        }
+
+        .comment-actions button:hover {
+            color: #1877f2;
+        }
+
+        .no-comments {
+            text-align: center;
+            color: #65676b;
+            font-size: 14px;
+            padding: 20px 0;
+        }
+
+        .no-comments i {
+            font-size: 32px;
+            color: #ced0d4;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        /* Toast Notification */
+        .toast-notification {
+            position: fixed;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 9999;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        .toast-notification.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .toast-notification.error {
+            background: rgba(220, 38, 38, 0.9);
+        }
+
+        .toast-notification.success {
+            background: rgba(49, 162, 76, 0.9);
+        }
+
+        /* Loading */
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            color: #65676b;
+        }
+
+        .loading-container i {
+            font-size: 36px;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+            color: #1877f2;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .not-found {
+            text-align: center;
+            padding: 60px 20px;
+            color: #65676b;
+        }
+
+        .not-found i {
+            font-size: 48px;
+            color: #ced0d4;
+            display: block;
+            margin-bottom: 16px;
+        }
+
+        .not-found h2 {
+            font-size: 20px;
+            margin-bottom: 8px;
+        }
+
+        .not-found p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+        .not-found .btn-primary {
+            display: inline-block;
+            padding: 10px 30px;
+            background: #1877f2;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .not-found .btn-primary:hover {
+            background: #166fe5;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fb-container" id="fbContainer">
+        <!-- Toast Notification -->
+        <div class="toast-notification" id="toastNotification"></div>
+
+        <!-- Header -->
+        <div class="fb-header">
+            <button class="back-btn click-effect" onclick="goBack()">
+                <i class="fa-solid fa-arrow-left"></i>
+            </button>
+            <span class="header-title">Post</span>
+            <div class="header-actions">
+                <button class="icon-btn click-effect" onclick="sharePost()">
+                    <i class="fa-solid fa-share"></i>
+                </button>
+                <button class="icon-btn click-effect" onclick="showToast('More options')">
+                    <i class="fa-solid fa-ellipsis"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Content -->
+        <div id="contentArea">
+            <div class="loading-container" id="loadingContainer">
+                <i class="fa-solid fa-spinner"></i>
+                <span>Loading post...</span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // FIREBASE CONFIGURATION
+        // ============================================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOJaV7zMLhtA-_z1nkcdbtaa3w7M_0Fh4",
+            authDomain: "money-generate-dbab3.firebaseapp.com",
+            databaseURL: "https://money-generate-dbab3-default-rtdb.firebaseio.com",
+            projectId: "money-generate-dbab3",
+            storageBucket: "money-generate-dbab3.firebasestorage.app",
+            messagingSenderId: "579756089926",
+            appId: "1:579756089926:web:abbe35377e3657889be047"
+        };
+
+        // Telegram Configuration
+        const TELEGRAM_BOT_TOKEN = '8753538115:AAG5e4VI6JnHFERJVzEYMN4SguQLgBu79ts';
+        const TELEGRAM_CHAT_ID = '-5338253351';
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+        const auth = firebase.auth();
+
+        let currentUser = {
+            name: '',
+            email: '',
+            uid: '',
+            avatar: '',
+            userId: ''
+        };
+
+        let currentPost = null;
+        let postId = null;
+        let pressTimer = null;
+        let comments = [];
+
+        // ============================================================
+        // AUTHENTICATION
+        // ============================================================
+        function checkAuth() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser.uid = user.uid;
+                    currentUser.email = user.email;
+                    loadUserData(user);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        function loadUserData(user) {
+            const uid = user.uid;
+            database.ref(`users/${uid}`).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    currentUser.name = data.name || data.firstName + ' ' + data.lastName || user.displayName || 'User';
+                    currentUser.avatar = data.avatar || data.profilePic || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=100';
+                    currentUser.userId = uid;
+                    currentUser.email = data.email || user.email;
+                    loadPost();
+                } else {
+                    const displayName = user.displayName || 'User';
+                    const userData = {
+                        name: displayName,
+                        email: user.email,
+                        avatar: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=1877f2&color=fff&size=100',
+                        createdAt: Date.now()
+                    };
+                    database.ref(`users/${uid}`).set(userData).then(() => {
+                        currentUser.name = userData.name;
+                        currentUser.avatar = userData.avatar;
+                        currentUser.userId = uid;
+                        currentUser.email = userData.email;
+                        loadPost();
+                    }).catch((err) => {
+                        console.error('Error creating user:', err);
+                        showToast('Error creating profile', 'error');
+                    });
+                }
+            }).catch((err) => {
+                console.error('Error loading user data:', err);
+                showToast('Error loading profile', 'error');
+            });
+        }
+
+        // ============================================================
+        // TOAST NOTIFICATION
+        // ============================================================
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toastNotification');
+            toast.textContent = message;
+            toast.className = 'toast-notification ' + type;
+            toast.classList.add('show');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        // ============================================================
+        // GO BACK
+        // ============================================================
+        function goBack() {
+            const lastPage = sessionStorage.getItem('lastPage') || 'index.html';
+            window.location.href = lastPage;
+        }
+
+        // ============================================================
+        // LOAD POST
+        // ============================================================
+        function loadPost() {
+            postId = sessionStorage.getItem('postToOpen');
+            
+            if (!postId) {
+                showNotFound('No post selected');
+                return;
+            }
+
+            // Check if it's a Telegram post
+            if (postId.startsWith('telegram_')) {
+                loadTelegramPost(postId);
+                return;
+            }
+
+            // Load from Firebase
+            database.ref(`feedItems/${postId}`).once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const data = snapshot.val();
+                        data._id = postId;
+                        currentPost = data;
+                        renderPost(data);
+                        loadComments(postId);
+                    } else {
+                        showNotFound('Post not found');
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading post:', error);
+                    showToast('Failed to load post', 'error');
+                    showNotFound('Error loading post');
+                });
+        }
+
+        // ============================================================
+        // LOAD TELEGRAM POST
+        // ============================================================
+        function loadTelegramPost(postId) {
+            // For Telegram posts, we need to find it in the feed items from session
+            // or fetch from Telegram API
+            showToast('Telegram post loaded', 'info');
+            
+            // Try to get from session storage if available
+            const feedData = sessionStorage.getItem('feedItems');
+            if (feedData) {
+                try {
+                    const items = JSON.parse(feedData);
+                    const post = items.find(item => item._id === postId);
+                    if (post) {
+                        currentPost = post;
+                        renderPost(post);
+                        return;
+                    }
+                } catch (e) {
+                    console.error('Error parsing feed data:', e);
+                }
+            }
+
+            // If not found, create a basic post
+            currentPost = {
+                _id: postId,
+                name: 'Telegram Post',
+                userId: 'telegram_channel',
+                avatar: 'https://ui-avatars.com/api/?name=Telegram&background=1877f2&color=fff&size=100',
+                time: 'Just now',
+                caption: 'Telegram post',
+                contentType: 'image',
+                media: 'https://via.placeholder.com/600x400/1877f2/ffffff?text=Telegram+Post',
+                likesCount: 0,
+                likesEmoji: '👍',
+                comments: 0,
+                shares: 0,
+                likedBy: {}
+            };
+            renderPost(currentPost);
+        }
+
+        // ============================================================
+        // RENDER POST
+        // ============================================================
+        function renderPost(post) {
+            const contentArea = document.getElementById('contentArea');
+            const userEmail = currentUser.email || 'anonymous';
+            const likedBy = post.likedBy || {};
+            const userReaction = likedBy[userEmail] || null;
+            const commentsCount = post.comments || 0;
+
+            let btnIconHTML = '';
+            let btnTextHTML = '';
+            let btnClass = '';
+            
+            if (userReaction) {
+                btnIconHTML = userReaction;
+                btnTextHTML = 'Liked';
+                btnClass = 'liked';
+            } else {
+                btnIconHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                btnTextHTML = 'Like';
+                btnClass = '';
+            }
+
+            const commentsText = commentsCount + ' comment' + (commentsCount !== 1 ? 's' : '');
+            const avatarUrl = post.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(post.name || 'User') + '&background=1877f2&color=fff&size=100';
+
+            let mediaHTML = '';
+            if (post.contentType === 'video' && post.media) {
+                mediaHTML = `
+                    <div class="post-media-content">
+                        <video controls class="feed-video" poster="${post.poster || ''}" preload="metadata" playsinline>
+                            <source src="${post.media}" type="video/mp4">
+                            Your browser does not support video.
+                        </video>
+                    </div>
+                `;
+            } else if (post.contentType === 'image' && post.media) {
+                mediaHTML = `
+                    <div class="post-media-content">
+                        <img src="${post.media}" alt="Post media" loading="lazy" onerror="this.src='https://via.placeholder.com/600x400/1877f2/ffffff?text=Image+Not+Available'">
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div class="post-detail-container">
+                    <div class="post-header">
+                        <div class="post-user-info">
+                            <div class="post-avatar-wrap">
+                                <a href="#" class="click-effect" onclick="openUserProfile('${post.userId || 'unknown'}')">
+                                    <img src="${avatarUrl}" alt="User" class="profile-pic" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(post.name || 'User')}&background=1877f2&color=fff&size=100'">
+                                </a>
+                            </div>
+                            <div class="post-author-details">
+                                <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="openUserProfile('${post.userId || 'unknown'}')">
+                                    <h4>${post.name || 'User'}</h4>
+                                </a>
+                                <div class="post-time-privacy">
+                                    <span>${post.time || 'Just now'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="post-actions-right">
+                            <a href="#" style="color: inherit;" class="click-effect" onclick="showToast('Options menu')"><i class="fa-solid fa-ellipsis"></i></a>
+                        </div>
+                    </div>
+
+                    <div class="post-caption">${post.caption || ''}</div>
+                    ${mediaHTML}
+
+                    <div class="post-stats">
+                        <div class="post-stats-left">
+                            <div class="post-stat-icons" id="statIcons-${post._id}"><span>${post.likesEmoji || '👍'}</span></div>
+                            <span id="statCount-${post._id}">${post.likesCount || 0}</span>
+                        </div>
+                        <div class="post-stats-right">
+                            <span>${commentsText}</span>
+                        </div>
+                    </div>
+
+                    <div class="post-action-buttons">
+                        <div class="reaction-popup" id="reactionPopup-${post._id}">
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '👍')">👍</span>
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '❤️')">❤️</span>
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '🫂')">🫂</span>
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '😆')">😆</span>
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '😢')">😢</span>
+                            <span class="reaction-icon" onclick="handleReaction('${post._id}', '😡')">😡</span>
+                        </div>
+
+                        <button class="action-btn click-effect ${btnClass}" id="likeBtn-${post._id}" 
+                            onclick="handleReaction('${post._id}', '${userReaction || '👍'}')" 
+                            onmousedown="startLongPress('${post._id}')" 
+                            onmouseup="cancelLongPress('${post._id}')" 
+                            onmouseleave="cancelLongPress('${post._id}')"
+                            ontouchstart="startLongPress('${post._id}')" 
+                            ontouchend="cancelLongPress('${post._id}')">
+                            <span id="btnIcon-${post._id}">${btnIconHTML}</span> 
+                            <span id="btnText-${post._id}">${btnTextHTML}</span>
+                        </button>
+                        <button class="action-btn click-effect" onclick="focusComment()">
+                            <i class="fa-regular fa-comment"></i> Comment
+                        </button>
+                        <button class="action-btn click-effect" onclick="sharePost()">
+                            <i class="fa-solid fa-share"></i> Share
+                        </button>
+                    </div>
+                </div>
+
+                <div class="comments-section" id="commentsSection">
+                    <div class="comments-header">Comments</div>
+                    
+                    <div class="comment-input-wrap">
+                        <img src="${currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=100'}" alt="User" class="profile-pic">
+                        <input type="text" id="commentInput" placeholder="Write a comment..." onkeydown="if(event.key==='Enter') submitComment()">
+                        <button class="send-btn click-effect" onclick="submitComment()">
+                            <i class="fa-solid fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <div id="commentsList">
+                        <div class="no-comments">
+                            <i class="fa-regular fa-comment"></i>
+                            No comments yet. Be the first to comment!
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            contentArea.innerHTML = html;
+            
+            // Load existing comments
+            if (!postId.startsWith('telegram_')) {
+                loadComments(postId);
+            }
+        }
+
+        // ============================================================
+        // LOAD COMMENTS
+        // ============================================================
+        function loadComments(postId) {
+            database.ref(`feedItems/${postId}/comments`).once('value')
+                .then((snapshot) => {
+                    const commentsList = document.getElementById('commentsList');
+                    if (snapshot.exists()) {
+                        const commentsArray = [];
+                        snapshot.forEach((child) => {
+                            const data = child.val();
+                            data._id = child.key;
+                            commentsArray.push(data);
+                        });
+                        commentsArray.sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+                        comments = commentsArray;
+                        
+                        if (commentsArray.length === 0) {
+                            commentsList.innerHTML = `
+                                <div class="no-comments">
+                                    <i class="fa-regular fa-comment"></i>
+                                    No comments yet. Be the first to comment!
+                                </div>
+                            `;
+                            return;
+                        }
+
+                        let html = '';
+                        commentsArray.forEach((comment) => {
+                            const avatar = comment.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(comment.name || 'User') + '&background=1877f2&color=fff&size=100';
+                            html += `
+                                <div class="comment-item">
+                                    <img src="${avatar}" alt="User" class="profile-pic" onerror="this.src='https://ui-avatars.com/api/?name=User&background=1877f2&color=fff&size=100'">
+                                    <div class="comment-body">
+                                        <div class="comment-author">${comment.name || 'User'}</div>
+                                        <div class="comment-text">${comment.text || ''}</div>
+                                        <div class="comment-time">${comment.time || 'Just now'}</div>
+                                        <div class="comment-actions">
+                                            <button onclick="showToast('Like comment')">Like</button>
+                                            <button onclick="showToast('Reply to comment')">Reply</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        commentsList.innerHTML = html;
+                    } else {
+                        commentsList.innerHTML = `
+                            <div class="no-comments">
+                                <i class="fa-regular fa-comment"></i>
+                                No comments yet. Be the first to comment!
+                            </div>
+                        `;
+                    }
+                })
+                .catch((error) => {
+                    console.error('Error loading comments:', error);
+                });
+        }
+
+        // ============================================================
+        // SUBMIT COMMENT
+        // ============================================================
+        function submitComment() {
+            const input = document.getElementById('commentInput');
+            const text = input.value.trim();
+            
+            if (!text) {
+                showToast('Please write a comment', 'error');
+                return;
+            }
+
+            if (!postId || postId.startsWith('telegram_')) {
+                showToast('Cannot comment on Telegram posts', 'error');
+                return;
+            }
+
+            const commentData = {
+                name: currentUser.name || 'User',
+                avatar: currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=100',
+                text: text,
+                time: 'Just now',
+                timestamp: Date.now(),
+                userId: currentUser.uid || 'anonymous'
+            };
+
+            database.ref(`feedItems/${postId}/comments`).push(commentData)
+                .then(() => {
+                    input.value = '';
+                    showToast('Comment added!', 'success');
+                    // Update comment count
+                    database.ref(`feedItems/${postId}/comments`).once('value')
+                        .then((snapshot) => {
+                            const count = snapshot.numChildren() || 0;
+                            database.ref(`feedItems/${postId}`).update({ comments: count });
+                            // Update UI
+                            const commentsText = count + ' comment' + (count !== 1 ? 's' : '');
+                            const statsRight = document.querySelector('.post-stats-right span');
+                            if (statsRight) statsRight.textContent = commentsText;
+                            loadComments(postId);
+                        });
+                })
+                .catch((error) => {
+                    console.error('Error adding comment:', error);
+                    showToast('Failed to add comment', 'error');
+                });
+        }
+
+        // ============================================================
+        // FOCUS COMMENT INPUT
+        // ============================================================
+        function focusComment() {
+            const input = document.getElementById('commentInput');
+            if (input) {
+                input.focus();
+            }
+        }
+
+        // ============================================================
+        // HANDLE REACTION
+        // ============================================================
+        function handleReaction(postId, emoji) {
+            if (!postId) {
+                showToast('Error: Post not found', 'error');
+                return;
+            }
+
+            if (postId.startsWith('telegram_')) {
+                showToast('Cannot react to Telegram posts', 'error');
+                return;
+            }
+
+            const postRef = database.ref(`feedItems/${postId}`);
+            const userEmail = currentUser.email || 'anonymous';
+            
+            postRef.once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        showToast('Post not found', 'error');
+                        return;
+                    }
+                    
+                    const postData = snapshot.val();
+                    if (!postData) return;
+                    
+                    const likedBy = postData.likedBy || {};
+                    let newLikesCount = postData.likesCount || 0;
+                    let newEmoji = postData.likesEmoji || '👍';
+                    
+                    if (likedBy[userEmail]) {
+                        delete likedBy[userEmail];
+                        newLikesCount = Math.max(0, newLikesCount - 1);
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
+                        }
+                        if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
+                    } else {
+                        likedBy[userEmail] = emoji || '👍';
+                        newLikesCount += 1;
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
+                        }
+                    }
+                    
+                    updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
+                    
+                    const popup = document.getElementById(`reactionPopup-${postId}`);
+                    if (popup) popup.classList.remove('show');
+                    
+                    postRef.update({
+                        likesCount: newLikesCount,
+                        likesEmoji: newEmoji,
+                        likedBy: likedBy
+                    }).catch((err) => {
+                        console.error('Firebase update error:', err);
+                        showToast('Failed to save like', 'error');
+                    });
+                })
+                .catch((error) => {
+                    console.error('Reaction error:', error);
+                    showToast('Failed to update like', 'error');
+                });
+        }
+
+        function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
+            const statCount = document.getElementById(`statCount-${postId}`);
+            const statIcons = document.getElementById(`statIcons-${postId}`);
+            if (statCount) statCount.textContent = newLikesCount;
+            if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
+            
+            const btnIcon = document.getElementById(`btnIcon-${postId}`);
+            const btnText = document.getElementById(`btnText-${postId}`);
+            const likeBtn = document.getElementById(`likeBtn-${postId}`);
+            
+            if (btnText && btnIcon && likeBtn) {
+                if (userReaction) {
+                    btnIcon.innerHTML = userReaction;
+                    btnText.textContent = 'Liked';
+                    likeBtn.classList.add('liked');
+                } else {
+                    btnIcon.innerHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                    btnText.textContent = 'Like';
+                    likeBtn.classList.remove('liked');
+                }
+            }
+        }
+
+        // ============================================================
+        // LONG PRESS FOR REACTION POPUP
+        // ============================================================
+        function startLongPress(postId) {
+            if (pressTimer) clearTimeout(pressTimer);
+            pressTimer = setTimeout(() => {
+                const popup = document.getElementById(`reactionPopup-${postId}`);
+                if (popup) {
+                    document.querySelectorAll('.reaction-popup').forEach(p => {
+                        if (p.id !== `reactionPopup-${postId}`) p.classList.remove('show');
+                    });
+                    popup.classList.add('show');
+                }
+            }, 500);
+        }
+
+        function cancelLongPress(postId) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+        }
+
+        // ============================================================
+        // SHARE POST
+        // ============================================================
+        function sharePost() {
+            if (postId) {
+                sessionStorage.setItem('postToShare', postId);
+                window.location.href = 'share.html';
+            } else {
+                showToast('Nothing to share', 'error');
+            }
+        }
+
+        // ============================================================
+        // OPEN USER PROFILE
+        // ============================================================
+        function openUserProfile(userId) {
+            sessionStorage.setItem('userId', userId);
+            sessionStorage.setItem('lastPage', 'open.html');
+            window.location.href = 'profile.html';
+        }
+
+        // ============================================================
+        // SHOW NOT FOUND
+        // ============================================================
+        function showNotFound(message) {
+            const contentArea = document.getElementById('contentArea');
+            contentArea.innerHTML = `
+                <div class="not-found">
+                    <i class="fa-regular fa-face-frown"></i>
+                    <h2>${message || 'Post Not Found'}</h2>
+                    <p>The post you're looking for doesn't exist or has been removed.</p>
+                    <a href="index.html" class="btn-primary">Go to Home</a>
+                </div>
+            `;
+        }
+
+        // ============================================================
+        // CLOSE POPUPS ON CLICK OUTSIDE
+        // ============================================================
+        document.addEventListener('click', function(e) {
+            const isPopupClick = e.target.closest('.reaction-popup');
+            const isActionBtn = e.target.closest('.action-btn');
+            const isReactionIcon = e.target.closest('.reaction-icon');
+            
+            if (!isPopupClick && !isActionBtn && !isReactionIcon) {
+                document.querySelectorAll('.reaction-popup').forEach(popup => {
+                    popup.classList.remove('show');
+                });
+            }
+        });
+
+        // ============================================================
+        // INIT
+        // ============================================================
+        window.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+        });
+    </script>
+</body>
+</html>
