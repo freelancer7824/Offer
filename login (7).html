@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Facebook - Log In or Sign Up</title>
+    <!-- FontAwesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: #ffffff;
+            color: #050505;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .fb-container {
+            width: 100%;
+            max-width: 480px;
+            background-color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 20px 16px;
+            position: relative;
+        }
+
+        /* Language Bar */
+        .lang-bar {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            color: #65676b;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        /* Center Content Box */
+        .center-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            flex: 1;
+            justify-content: center;
+            padding-bottom: 40px;
+        }
+
+        .fb-logo-large {
+            color: #1877f2;
+            font-size: 72px;
+            margin-bottom: 40px;
+        }
+
+        /* Form Styling */
+        .auth-form {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 10px;
+        }
+
+        .form-row .input-group {
+            flex: 1;
+        }
+
+        .input-group {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-field {
+            width: 100%;
+            height: 52px;
+            padding: 0 14px;
+            font-size: 16px;
+            border: 1px solid #ccd0d5;
+            border-radius: 8px;
+            background: #ffffff;
+            outline: none;
+            color: #050505;
+            transition: border-color 0.2s;
+        }
+
+        .input-field:focus {
+            border-color: #1877f2;
+        }
+
+        .input-icon-right {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #65676b;
+            font-size: 18px;
+            cursor: pointer;
+        }
+
+        .field-label {
+            font-size: 12px;
+            color: #65676b;
+            margin-bottom: 4px;
+            display: block;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            width: 100%;
+            height: 48px;
+            background-color: #1877f2;
+            color: white;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary:active {
+            background-color: #166fe5;
+        }
+
+        .btn-outline {
+            width: 100%;
+            height: 48px;
+            background-color: transparent;
+            color: #1877f2;
+            font-size: 16px;
+            font-weight: 600;
+            border: 1px solid #1877f2;
+            border-radius: 24px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            transition: background-color 0.2s;
+        }
+
+        .btn-outline:active {
+            background-color: #f0f2f5;
+        }
+
+        .forgot-link {
+            text-align: center;
+            color: #050505;
+            font-size: 14px;
+            font-weight: 600;
+            text-decoration: none;
+            margin-top: 15px;
+            display: block;
+        }
+
+        /* Bottom Footer Meta */
+        .footer-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            padding-bottom: 10px;
+        }
+
+        .meta-logo {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: #050505;
+            font-weight: 700;
+            font-size: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .meta-logo i {
+            color: #1877f2;
+            font-size: 18px;
+        }
+
+        /* View Sections Control */
+        .auth-section {
+            display: none;
+            width: 100%;
+        }
+
+        .auth-section.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+
+        /* Back Arrow */
+        .back-arrow {
+            position: absolute;
+            top: 20px;
+            left: 16px;
+            font-size: 20px;
+            color: #050505;
+            background: none;
+            border: none;
+            cursor: pointer;
+            display: none;
+        }
+
+        .auth-section.active ~ .back-arrow.signup-back {
+            display: block;
+        }
+
+        /* Error message alert */
+        .error-msg {
+            color: #e41e3f;
+            font-size: 13px;
+            text-align: center;
+            margin-bottom: 5px;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="fb-container" id="fbContainer">
+        <!-- Back Arrow for Signup View -->
+        <button class="back-arrow signup-back" onclick="toggleAuthView('login')"><i class="fa-solid fa-arrow-left"></i></button>
+
+        <!-- Top Language Bar -->
+        <div class="lang-bar" onclick="alert('English (UK)')">
+            <span>English (UK)</span>
+            <i class="fa-solid fa-chevron-down" style="font-size: 10px;"></i>
+        </div>
+
+        <!-- CENTER CONTENT CONTAINER -->
+        <div class="center-box">
+            
+            <!-- LOGIN VIEW SECTION -->
+            <div id="loginView" class="auth-section active">
+                <div class="fb-logo-large">
+                    <i class="fa-brands fa-facebook"></i>
+                </div>
+
+                <div id="loginError" class="error-msg"></div>
+
+                <form class="auth-form" onsubmit="handleLogin(event)">
+                    <div class="input-group">
+                        <input type="text" id="loginIdentifier" class="input-field" placeholder="Mobile number or email address" required>
+                        <i class="fa-solid fa-circle-info input-icon-right"></i>
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="loginPassword" class="input-field" placeholder="Password" required>
+                    </div>
+                    <button type="submit" class="btn-primary">Log in</button>
+                </form>
+
+                <a href="#" class="forgot-link" onclick="alert('Password recovery page')">Forgotten password?</a>
+
+                <div style="width: 100%; margin-top: 40px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                    <div style="width: 100%; display: flex; align-items: center; text-align: center; color: #737373; font-size: 13px;">
+                        <div style="flex: 1; border-bottom: 1px solid #dadde1;"></div>
+                        <span style="padding: 0 10px;">or</span>
+                        <div style="flex: 1; border-bottom: 1px solid #dadde1;"></div>
+                    </div>
+                    <button type="button" class="btn-outline" onclick="toggleAuthView('signup')">Create new account</button>
+                </div>
+            </div>
+
+            <!-- SIGNUP VIEW SECTION -->
+            <div id="signupView" class="auth-section">
+                <h2 style="font-size: 22px; font-weight: 700; margin-bottom: 8px; text-align: center;">Join Facebook</h2>
+                <p style="font-size: 14px; color: #65676b; text-align: center; margin-bottom: 24px;">We'll help you create a new account in a few easy steps.</p>
+
+                <div id="signupError" class="error-msg"></div>
+
+                <form class="auth-form" onsubmit="handleSignup(event)">
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label class="field-label">First Name</label>
+                            <input type="text" id="signFirstName" class="input-field" placeholder="First name" required style="height: 44px; font-size: 14px;">
+                        </div>
+                        <div class="input-group">
+                            <label class="field-label">Last Name</label>
+                            <input type="text" id="signLastName" class="input-field" placeholder="Surname" required style="height: 44px; font-size: 14px;">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="field-label">Address</label>
+                        <input type="text" id="signAddress" class="input-field" placeholder="Your current address" required style="height: 44px; font-size: 14px;">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label class="field-label">Phone Number</label>
+                            <input type="tel" id="signPhone" class="input-field" placeholder="Mobile number" required style="height: 44px; font-size: 14px;">
+                        </div>
+                        <div class="input-group">
+                            <label class="field-label">Date of Birth</label>
+                            <input type="date" id="signDob" class="input-field" required style="height: 44px; font-size: 14px;">
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="field-label">Email Address</label>
+                        <input type="email" id="signEmail" class="input-field" placeholder="Email address" required style="height: 44px; font-size: 14px;">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-group">
+                            <label class="field-label">Password</label>
+                            <input type="password" id="signPassword" class="input-field" placeholder="New password" required style="height: 44px; font-size: 14px;">
+                        </div>
+                        <div class="input-group">
+                            <label class="field-label">Confirm Password</label>
+                            <input type="password" id="signConfirmPassword" class="input-field" placeholder="Confirm password" required style="height: 44px; font-size: 14px;">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary" style="margin-top: 10px;">Sign Up</button>
+                </form>
+
+                <button type="button" class="btn-outline" style="margin-top: 12px; border: none; color: #1877f2;" onclick="toggleAuthView('login')">Already have an account?</button>
+            </div>
+
+        </div>
+
+        <!-- Bottom Footer Meta Branding -->
+        <div class="footer-meta">
+            <div class="meta-logo">
+                <i class="fa-solid fa-infinity"></i> Meta
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- FIREBASE CONFIGURATION & INITIALIZATION ---
+        const firebaseConfig = {
+            apiKey: "AIzaSyDOJaV7zMLhtA-_z1nkcdbtaa3w7M_0Fh4",
+            authDomain: "money-generate-dbab3.firebaseapp.com",
+            databaseURL: "https://money-generate-dbab3-default-rtdb.firebaseio.com",
+            projectId: "money-generate-dbab3",
+            storageBucket: "money-generate-dbab3.firebasestorage.app",
+            messagingSenderId: "579756089926",
+            appId: "1:579756089926:web:abbe35377e3657889be047"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // Toggle between Login and Signup Views seamlessly
+        function toggleAuthView(viewName) {
+            const loginView = document.getElementById('loginView');
+            const signupView = document.getElementById('signupView');
+            const backArrow = document.querySelector('.signup-back');
+
+            if (viewName === 'signup') {
+                loginView.classList.remove('active');
+                signupView.classList.add('active');
+                backArrow.style.display = 'block';
+                window.scrollTo(0, 0);
+            } else {
+                signupView.classList.remove('active');
+                loginView.classList.add('active');
+                backArrow.style.display = 'none';
+                window.scrollTo(0, 0);
+            }
+        }
+
+        // Handle Signup Submission and Save to Firebase
+        function handleSignup(e) {
+            e.preventDefault();
+            const firstName = document.getElementById('signFirstName').value.trim();
+            const lastName = document.getElementById('signLastName').value.trim();
+            const address = document.getElementById('signAddress').value.trim();
+            const phone = document.getElementById('signPhone').value.trim();
+            const dob = document.getElementById('signDob').value;
+            const email = document.getElementById('signEmail').value.trim();
+            const password = document.getElementById('signPassword').value;
+            const confirmPassword = document.getElementById('signConfirmPassword').value;
+            const errorEl = document.getElementById('signupError');
+
+            if (password !== confirmPassword) {
+                errorEl.style.display = 'block';
+                errorEl.innerText = 'Passwords do not match!';
+                return;
+            }
+
+            errorEl.style.display = 'none';
+
+            const userData = {
+                firstName,
+                lastName,
+                address,
+                phone,
+                dob,
+                email,
+                password,
+                createdAt: new Date().toISOString()
+            };
+
+            // Push user info to Firebase Database under 'users' node
+            database.ref('users').push(userData)
+                .then(() => {
+                    alert('Account created successfully! Please log in.');
+                    localStorage.setItem('isLoggedIn', 'true');
+                    localStorage.setItem('userEmail', email);
+                    window.location.href = 'index.html'; // Redirect to main app feed page
+                })
+                .catch((error) => {
+                    errorEl.style.display = 'block';
+                    errorEl.innerText = 'Error: ' + error.message;
+                });
+        }
+
+        // Handle Login Authentication against Firebase
+        function handleLogin(e) {
+            e.preventDefault();
+            const identifier = document.getElementById('loginIdentifier').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            const errorEl = document.getElementById('loginError');
+
+            database.ref('users').once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        let userFound = false;
+                        snapshot.forEach((childSnapshot) => {
+                            const user = childSnapshot.val();
+                            if ((user.email === identifier || user.phone === identifier) && user.password === password) {
+                                userFound = true;
+                                localStorage.setItem('isLoggedIn', 'true');
+                                localStorage.setItem('userEmail', user.email);
+                                window.location.href = 'index.html'; // Redirect to main app feed page
+                            }
+                        });
+
+                        if (!userFound) {
+                            errorEl.style.display = 'block';
+                            errorEl.innerText = 'Invalid email/phone or password!';
+                        }
+                    } else {
+                        errorEl.style.display = 'block';
+                        errorEl.innerText = 'No account found. Please sign up first!';
+                    }
+                })
+                .catch((error) => {
+                    errorEl.style.display = 'block';
+                    errorEl.innerText = 'Login error: ' + error.message;
+                });
+        }
+    </script>
+</body>
+</html>
