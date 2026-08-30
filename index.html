@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Facebook Mobile UI - Firebase</title>
+    <title>Facebook</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
@@ -45,39 +45,6 @@
         .click-effect:active {
             opacity: 0.7;
             transform: scale(0.97);
-        }
-
-        .swipe-refresh-indicator {
-            position: absolute;
-            top: 100px;
-            left: 50%;
-            transform: translateX(-50%) translateY(-50px);
-            width: 40px;
-            height: 40px;
-            background: #ffffff;
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            opacity: 0;
-            transition: transform 0.1s ease, opacity 0.1s ease;
-        }
-
-        .swipe-refresh-indicator i {
-            color: #1877f2;
-            font-size: 18px;
-            transition: transform 0.2s ease;
-        }
-
-        .swipe-refresh-indicator.spinning i {
-            animation: spinRefresh 0.8s infinite linear;
-        }
-
-        @keyframes spinRefresh {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
         }
 
         .fb-header {
@@ -870,6 +837,11 @@
             animation: spinRefresh 1s infinite linear;
         }
 
+        @keyframes spinRefresh {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
         .infinite-scroll-trigger {
             height: 20px;
             text-align: center;
@@ -917,17 +889,33 @@
             font-size: 11px;
             color: #65676b;
         }
-        
-        /* Like button animation */
-        .action-btn.liked {
-            color: #1877f2;
-            animation: likeAnim 0.3s ease;
+
+        .swipe-refresh-indicator {
+            position: absolute;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-50px);
+            width: 40px;
+            height: 40px;
+            background: #ffffff;
+            border-radius: 50%;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            transition: transform 0.1s ease, opacity 0.1s ease;
         }
-        
-        @keyframes likeAnim {
-            0% { transform: scale(1); }
-            50% { transform: scale(1.2); }
-            100% { transform: scale(1); }
+
+        .swipe-refresh-indicator i {
+            color: #1877f2;
+            font-size: 18px;
+            transition: transform 0.2s ease;
+        }
+
+        .swipe-refresh-indicator.spinning i {
+            animation: spinRefresh 0.8s infinite linear;
         }
     </style>
 </head>
@@ -1231,7 +1219,6 @@
                     likesEmoji: '👍',
                     comments: 4,
                     shares: 2,
-                    theme: 'theme-white',
                     likedBy: {}
                 },
                 {
@@ -1245,7 +1232,6 @@
                     likesEmoji: '❤️',
                     comments: 8,
                     shares: 5,
-                    theme: 'theme-white',
                     likedBy: {}
                 },
                 {
@@ -1259,7 +1245,6 @@
                     likesEmoji: '😆',
                     comments: 15,
                     shares: 7,
-                    theme: 'theme-white',
                     likedBy: {}
                 },
                 {
@@ -1274,7 +1259,6 @@
                     likesEmoji: '❤️',
                     comments: 42,
                     shares: 18,
-                    theme: 'theme-white',
                     likedBy: {}
                 },
                 {
@@ -1288,21 +1272,6 @@
                     likesEmoji: '❤️',
                     comments: 11,
                     shares: 4,
-                    theme: 'theme-white',
-                    likedBy: {}
-                },
-                {
-                    name: 'Shakib Hossain',
-                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-                    time: '8h ago',
-                    caption: 'সমুদ্রের ধারে বসে আছি। 🌊',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 156,
-                    likesEmoji: '❤️',
-                    comments: 23,
-                    shares: 12,
-                    theme: 'theme-white',
                     likedBy: {}
                 }
             ];
@@ -1320,9 +1289,9 @@
         }
 
         // ============================================================
-        // SAVE REACTION TO FIREBASE
+        // FACEBOOK LIKE REACTION - REAL FACEBOOK LOGIC
         // ============================================================
-        function saveReactionToFirebase(postId, emoji) {
+        function handleReaction(postId, emoji) {
             const postRef = database.ref(`feedItems/${postId}`);
             const userEmail = currentUser.email || 'anonymous';
             
@@ -1334,10 +1303,13 @@
                 let newLikesCount = postData.likesCount || 0;
                 let newEmoji = postData.likesEmoji || '👍';
                 
+                // Facebook Logic: If user already reacted, remove reaction (toggle)
                 if (likedBy[userEmail]) {
+                    // User already reacted - Remove reaction (Unlike)
                     delete likedBy[userEmail];
                     newLikesCount = Math.max(0, newLikesCount - 1);
                     
+                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1351,9 +1323,11 @@
                     }
                     if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
                 } else {
+                    // User hasn't reacted - Add reaction (Like)
                     likedBy[userEmail] = emoji || '👍';
                     newLikesCount += 1;
                     
+                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1367,6 +1341,7 @@
                     }
                 }
                 
+                // Update Firebase
                 postRef.update({
                     likesCount: newLikesCount,
                     likesEmoji: newEmoji,
@@ -1378,11 +1353,13 @@
         }
 
         function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
+            // Update stats
             const statCount = document.getElementById(`statCount-${postId}`);
             const statIcons = document.getElementById(`statIcons-${postId}`);
             if (statCount) statCount.textContent = newLikesCount;
             if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
             
+            // Update like button
             const btnIcon = document.getElementById(`btnIcon-${postId}`);
             const btnText = document.getElementById(`btnText-${postId}`);
             const likeBtn = document.getElementById(`likeBtn-${postId}`);
@@ -1527,16 +1504,16 @@
 
                         <div class="post-action-buttons" onclick="event.stopPropagation();">
                             <div class="reaction-popup" id="reactionPopup-${postId}">
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '👍')">👍</span>
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '❤️')">❤️</span>
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '🫂')">🫂</span>
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😆')">😆</span>
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😢')">😢</span>
-                                <span class="reaction-icon" onclick="event.stopPropagation();handleReactionFromPopup('${postId}', '😡')">😡</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '👍')">👍</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '❤️')">❤️</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '🫂')">🫂</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '😆')">😆</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '😢')">😢</span>
+                                <span class="reaction-icon" onclick="event.stopPropagation();handleReaction('${postId}', '😡')">😡</span>
                             </div>
 
                             <button class="action-btn click-effect ${btnClass}" id="likeBtn-${postId}" 
-                                onclick="event.stopPropagation();handleSingleLikeClick('${postId}')" 
+                                onclick="event.stopPropagation();handleReaction('${postId}', '${userReaction || '👍'}')" 
                                 onmousedown="event.stopPropagation();startLongPress('${postId}')" 
                                 onmouseup="event.stopPropagation();cancelLongPress('${postId}')" 
                                 ontouchstart="event.stopPropagation();startLongPress('${postId}')" 
@@ -1616,7 +1593,6 @@
         // NAVIGATION FUNCTIONS
         // ============================================================
         
-        // GO HOME WITHOUT RELOAD - Restore exact scroll position
         function goHome() {
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
@@ -1629,7 +1605,6 @@
                 else tab.classList.remove('active');
             });
             
-            // Restore exact scroll position
             const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
             setTimeout(() => {
                 window.scrollTo(0, savedPos);
@@ -1643,7 +1618,6 @@
             const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
 
             if (viewName === 'menu') {
-                // Save current scroll position before leaving home
                 sessionStorage.setItem('homeScrollPosition', window.scrollY);
                 homeView.classList.remove('active-view');
                 menuView.classList.add('active-view');
@@ -1676,7 +1650,6 @@
         function navigateTo(page, event) {
             if (event) event.preventDefault();
             
-            // Save current scroll position before leaving
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('lastPage', 'home');
             
@@ -1685,7 +1658,6 @@
                 return;
             }
             
-            // For all other pages, navigate
             window.location.href = 'error.html';
         }
 
@@ -1693,7 +1665,6 @@
         // POST DETAIL - Opens open.html
         // ============================================================
         function openPostDetail(postId) {
-            // Save current scroll position before navigating
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToOpen', postId);
             sessionStorage.setItem('lastPage', 'home');
@@ -1711,27 +1682,8 @@
         }
 
         // ============================================================
-        // LIKE FUNCTIONS
+        // LONG PRESS FOR REACTION POPUP
         // ============================================================
-        function handleSingleLikeClick(postId) {
-            const btnText = document.getElementById(`btnText-${postId}`);
-            if (!btnText) return;
-            
-            const isLiked = btnText.innerText === 'Liked';
-            
-            if (isLiked) {
-                saveReactionToFirebase(postId, '');
-            } else {
-                saveReactionToFirebase(postId, '👍');
-            }
-        }
-
-        function handleReactionFromPopup(postId, emoji) {
-            const popup = document.getElementById(`reactionPopup-${postId}`);
-            if (popup) popup.classList.remove('show');
-            saveReactionToFirebase(postId, emoji);
-        }
-
         let pressTimer = null;
 
         function startLongPress(postId) {
@@ -1844,17 +1796,14 @@
         });
 
         // ============================================================
-        // BACK BUTTON HANDLER - PREVENT RELOAD & RESTORE POSITION
+        // BACK BUTTON HANDLER
         // ============================================================
         window.addEventListener('popstate', function(e) {
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
             
-            // Check if we're on home or menu
             if (!homeView.classList.contains('active-view') && !menuView.classList.contains('active-view')) {
-                // Go back to home
                 goHome();
-                // Restore exact scroll position
                 const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
                 setTimeout(() => {
                     window.scrollTo(0, savedPos);
@@ -1878,7 +1827,6 @@
         // INIT
         // ============================================================
         window.addEventListener('DOMContentLoaded', function() {
-            // Check if coming back from another page
             const lastPage = sessionStorage.getItem('lastPage');
             if (lastPage === 'home') {
                 const pos = sessionStorage.getItem('homeScrollPosition');
@@ -1889,7 +1837,6 @@
                 }
                 sessionStorage.removeItem('lastPage');
             } else {
-                // Restore scroll position from session
                 const savedPos = sessionStorage.getItem('homeScrollPosition');
                 if (savedPos) {
                     setTimeout(function() {
