@@ -917,6 +917,18 @@
             font-size: 11px;
             color: #65676b;
         }
+        
+        /* Like button animation */
+        .action-btn.liked {
+            color: #1877f2;
+            animation: likeAnim 0.3s ease;
+        }
+        
+        @keyframes likeAnim {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
     </style>
 </head>
 <body>
@@ -1170,7 +1182,6 @@
         const batchSize = 10;
         let isLoadingMore = false;
         let allLoaded = false;
-        let isHomeReloading = false;
 
         // ============================================================
         // FETCH POSTS FROM FIREBASE
@@ -1187,7 +1198,6 @@
                         });
                         callback(items);
                     } else {
-                        // Seed initial data
                         seedFirebaseData();
                         setTimeout(() => {
                             database.ref('feedItems').once('value').then(s => {
@@ -1264,6 +1274,34 @@
                     likesEmoji: '❤️',
                     comments: 42,
                     shares: 18,
+                    theme: 'theme-white',
+                    likedBy: {}
+                },
+                {
+                    name: 'Tasnim Akter',
+                    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
+                    time: '6h ago',
+                    caption: 'সকালের কফি আর বই পড়া — পারফেক্ট কম্বো। ☕',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 67,
+                    likesEmoji: '❤️',
+                    comments: 11,
+                    shares: 4,
+                    theme: 'theme-white',
+                    likedBy: {}
+                },
+                {
+                    name: 'Shakib Hossain',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+                    time: '8h ago',
+                    caption: 'সমুদ্রের ধারে বসে আছি। 🌊',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 156,
+                    likesEmoji: '❤️',
+                    comments: 23,
+                    shares: 12,
                     theme: 'theme-white',
                     likedBy: {}
                 }
@@ -1419,7 +1457,6 @@
                 const likesCount = item.likesCount || 0;
                 const likesEmoji = item.likesEmoji || '👍';
                 const commentsCount = item.comments || 0;
-                const sharesCount = item.shares || 0;
 
                 const likedBy = item.likedBy || {};
                 const userReaction = likedBy[userEmail] || null;
@@ -1579,7 +1616,7 @@
         // NAVIGATION FUNCTIONS
         // ============================================================
         
-        // GO HOME WITHOUT RELOAD
+        // GO HOME WITHOUT RELOAD - Restore exact scroll position
         function goHome() {
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
@@ -1592,7 +1629,8 @@
                 else tab.classList.remove('active');
             });
             
-            const savedPos = parseInt(localStorage.getItem('homeScrollPosition') || '0');
+            // Restore exact scroll position
+            const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
             setTimeout(() => {
                 window.scrollTo(0, savedPos);
             }, 50);
@@ -1605,7 +1643,8 @@
             const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
 
             if (viewName === 'menu') {
-                localStorage.setItem('homeScrollPosition', window.scrollY);
+                // Save current scroll position before leaving home
+                sessionStorage.setItem('homeScrollPosition', window.scrollY);
                 homeView.classList.remove('active-view');
                 menuView.classList.add('active-view');
                 navTabs.forEach((tab, index) => {
@@ -1620,7 +1659,7 @@
                     if (index === 0) tab.classList.add('active');
                     else tab.classList.remove('active');
                 });
-                const saved = parseInt(localStorage.getItem('homeScrollPosition') || '0');
+                const saved = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
                 setTimeout(() => window.scrollTo(0, saved), 50);
             }
         }
@@ -1637,17 +1676,16 @@
         function navigateTo(page, event) {
             if (event) event.preventDefault();
             
-            // Save scroll position before leaving
-            localStorage.setItem('homeScrollPosition', window.scrollY);
+            // Save current scroll position before leaving
+            sessionStorage.setItem('homeScrollPosition', window.scrollY);
+            sessionStorage.setItem('lastPage', 'home');
             
             if (page === 'home') {
                 goHome();
                 return;
             }
             
-            // For all other pages, navigate to error.html
-            localStorage.setItem('lastPage', 'home');
-            localStorage.setItem('lastScrollPosition', window.scrollY);
+            // For all other pages, navigate
             window.location.href = 'error.html';
         }
 
@@ -1655,9 +1693,10 @@
         // POST DETAIL - Opens open.html
         // ============================================================
         function openPostDetail(postId) {
-            localStorage.setItem('postToOpen', postId);
-            localStorage.setItem('homeScrollPosition', window.scrollY);
-            localStorage.setItem('lastPage', 'home');
+            // Save current scroll position before navigating
+            sessionStorage.setItem('homeScrollPosition', window.scrollY);
+            sessionStorage.setItem('postToOpen', postId);
+            sessionStorage.setItem('lastPage', 'home');
             window.location.href = 'open.html';
         }
 
@@ -1665,9 +1704,9 @@
         // STORY - Opens view-story.html
         // ============================================================
         function openStory(storyId) {
-            localStorage.setItem('storyToView', storyId);
-            localStorage.setItem('homeScrollPosition', window.scrollY);
-            localStorage.setItem('lastPage', 'home');
+            sessionStorage.setItem('homeScrollPosition', window.scrollY);
+            sessionStorage.setItem('storyToView', storyId);
+            sessionStorage.setItem('lastPage', 'home');
             window.location.href = 'view-story.html';
         }
 
@@ -1796,11 +1835,30 @@
         // ============================================================
         // CLOSE POPUPS ON CLICK OUTSIDE
         // ============================================================
-        window.addEventListener('click', (e) => {
-            if (!e.target.closest('.action-btn')) {
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.action-btn') && !e.target.closest('.reaction-icon')) {
                 document.querySelectorAll('.reaction-popup').forEach(popup => {
                     popup.classList.remove('show');
                 });
+            }
+        });
+
+        // ============================================================
+        // BACK BUTTON HANDLER - PREVENT RELOAD & RESTORE POSITION
+        // ============================================================
+        window.addEventListener('popstate', function(e) {
+            const homeView = document.getElementById('homeView');
+            const menuView = document.getElementById('menuView');
+            
+            // Check if we're on home or menu
+            if (!homeView.classList.contains('active-view') && !menuView.classList.contains('active-view')) {
+                // Go back to home
+                goHome();
+                // Restore exact scroll position
+                const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
+                setTimeout(() => {
+                    window.scrollTo(0, savedPos);
+                }, 100);
             }
         });
 
@@ -1817,45 +1875,26 @@
         });
 
         // ============================================================
-        // BACK BUTTON HANDLER - PREVENT RELOAD
-        // ============================================================
-        window.addEventListener('popstate', function(e) {
-            const homeView = document.getElementById('homeView');
-            const menuView = document.getElementById('menuView');
-            
-            if (!homeView.classList.contains('active-view') && !menuView.classList.contains('active-view')) {
-                // If we're in a sub-page, go back to home without reload
-                goHome();
-                // Restore scroll position
-                const savedPos = parseInt(localStorage.getItem('homeScrollPosition') || '0');
-                setTimeout(() => {
-                    window.scrollTo(0, savedPos);
-                }, 100);
-            }
-        });
-
-        // ============================================================
         // INIT
         // ============================================================
-        window.addEventListener('DOMContentLoaded', () => {
-            // Restore scroll position
-            const savedPos = localStorage.getItem('homeScrollPosition');
-            if (savedPos) {
-                setTimeout(() => {
-                    window.scrollTo(0, parseInt(savedPos));
-                }, 300);
-            }
-            
+        window.addEventListener('DOMContentLoaded', function() {
             // Check if coming back from another page
-            const lastPage = localStorage.getItem('lastPage');
+            const lastPage = sessionStorage.getItem('lastPage');
             if (lastPage === 'home') {
-                const pos = localStorage.getItem('lastScrollPosition');
+                const pos = sessionStorage.getItem('homeScrollPosition');
                 if (pos) {
-                    setTimeout(() => {
+                    setTimeout(function() {
                         window.scrollTo(0, parseInt(pos));
-                        localStorage.removeItem('lastScrollPosition');
-                        localStorage.removeItem('lastPage');
-                    }, 400);
+                    }, 300);
+                }
+                sessionStorage.removeItem('lastPage');
+            } else {
+                // Restore scroll position from session
+                const savedPos = sessionStorage.getItem('homeScrollPosition');
+                if (savedPos) {
+                    setTimeout(function() {
+                        window.scrollTo(0, parseInt(savedPos));
+                    }, 300);
                 }
             }
             
