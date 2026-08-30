@@ -8,6 +8,7 @@
     
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 
     <style>
         * {
@@ -470,150 +471,6 @@
             transform: scale(1.4) translateY(-8px);
         }
 
-        .pymk-container {
-            background: #ffffff;
-            margin-bottom: 10px;
-            border-bottom: 8px solid #f0f2f5;
-            padding: 12px 0 16px 0;
-        }
-
-        .pymk-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 12px 10px 12px;
-        }
-
-        .pymk-title {
-            font-size: 17px;
-            font-weight: 700;
-            color: #050505;
-        }
-
-        .pymk-cards-scroll {
-            display: flex;
-            gap: 8px;
-            padding: 0 12px;
-            overflow-x: auto;
-            scrollbar-width: none;
-        }
-
-        .pymk-cards-scroll::-webkit-scrollbar {
-            display: none;
-        }
-
-        .pymk-card {
-            min-width: 160px;
-            max-width: 160px;
-            background: #ffffff;
-            border: 1px solid #ced0d4;
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            flex-shrink: 0;
-        }
-
-        .pymk-img-wrap {
-            width: 100%;
-            height: 160px;
-            background: #e4e6eb;
-            position: relative;
-            cursor: pointer;
-        }
-
-        .pymk-img-wrap img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .pymk-info {
-            padding: 10px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: space-between;
-        }
-
-        .pymk-name {
-            font-size: 14px;
-            font-weight: 600;
-            color: #050505;
-            margin-bottom: 10px;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            cursor: pointer;
-        }
-        .pymk-name:hover {
-            text-decoration: underline;
-        }
-
-        .pymk-add-btn {
-            width: 100%;
-            background-color: #e7f3ff;
-            color: #1877f2;
-            border: none;
-            border-radius: 6px;
-            padding: 8px 0;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            cursor: pointer;
-            text-decoration: none;
-        }
-
-        .pymk-add-btn:active {
-            background-color: #dbe7f2;
-        }
-
-        .pymk-see-all-btn {
-            margin: 12px 12px 0 12px;
-            width: calc(100% - 24px);
-            background-color: #e4e6eb;
-            color: #050505;
-            border: none;
-            border-radius: 6px;
-            padding: 10px 0;
-            font-size: 15px;
-            font-weight: 600;
-            cursor: pointer;
-            text-align: center;
-            display: block;
-            text-decoration: none;
-        }
-
-        .pymk-see-all-btn:active {
-            background-color: #d8dadf;
-        }
-
-        .animated-ad-box {
-            position: relative;
-            overflow: hidden;
-            background: linear-gradient(135deg, #1877f2, #00c6ff);
-            color: white;
-            padding: 30px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: block;
-        }
-
-        .animated-ad-content h2 {
-            font-size: 24px;
-            margin-bottom: 8px;
-            animation: bounceIn 1.5s infinite alternate;
-        }
-
-        @keyframes bounceIn {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-5px); }
-        }
-
         .menu-view {
             background-color: #f0f2f5;
             min-height: calc(100vh - 104px);
@@ -791,45 +648,6 @@
             color: #050505;
         }
 
-        .post-banner {
-            padding: 20px 16px;
-            min-height: 120px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 8px 8px 8px;
-            border-radius: 8px;
-        }
-
-        .post-banner .post-caption {
-            color: #ffffff;
-            font-size: 20px;
-            font-weight: bold;
-            text-align: center;
-            padding: 0;
-            text-shadow: 0 1px 3px rgba(0,0,0,0.3);
-        }
-
-        .theme-white .post-banner { display: none; }
-        .theme-purple .post-banner { background: linear-gradient(135deg, #8A2387, #E94057, #F27121); }
-        .theme-red .post-banner { background: linear-gradient(135deg, #CB356B, #BD3F32); }
-        .theme-dark .post-banner { background: #242526; }
-        .theme-sunset .post-banner { background: linear-gradient(135deg, #ff7e5f, #feb47b); }
-
-        .no-posts-message {
-            text-align: center;
-            padding: 40px 20px;
-            color: #65676b;
-            font-size: 16px;
-        }
-
-        .no-posts-message i {
-            font-size: 48px;
-            color: #ced0d4;
-            margin-bottom: 15px;
-            display: block;
-        }
-
         .feed-loader {
             text-align: center;
             padding: 30px;
@@ -857,40 +675,6 @@
             display: inline-block;
             animation: spinRefresh 1s infinite linear;
             margin-right: 8px;
-        }
-
-        .comment-item {
-            display: flex;
-            gap: 10px;
-            padding: 8px 0;
-            border-bottom: 1px solid #f0f2f5;
-            cursor: pointer;
-        }
-
-        .comment-item img {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            object-fit: cover;
-        }
-
-        .comment-item .comment-body {
-            flex: 1;
-        }
-
-        .comment-item .comment-body .comment-author {
-            font-weight: 600;
-            font-size: 13px;
-        }
-
-        .comment-item .comment-body .comment-text {
-            font-size: 14px;
-            color: #050505;
-        }
-
-        .comment-item .comment-body .comment-time {
-            font-size: 11px;
-            color: #65676b;
         }
 
         .swipe-refresh-indicator {
@@ -921,7 +705,6 @@
             animation: spinRefresh 0.8s infinite linear;
         }
 
-        /* Toast notification */
         .toast-notification {
             position: fixed;
             bottom: 80px;
@@ -943,6 +726,131 @@
             opacity: 1;
             transform: translateX(-50%) translateY(0);
         }
+
+        .story-viewer-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #000;
+            z-index: 99999;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .story-viewer-overlay.active {
+            display: flex;
+        }
+
+        .story-viewer-content {
+            width: 100%;
+            max-width: 500px;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+        }
+
+        .story-viewer-content img,
+        .story-viewer-content video {
+            max-width: 100%;
+            max-height: 100vh;
+            object-fit: contain;
+        }
+
+        .story-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 10;
+            background: rgba(0,0,0,0.5);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: none;
+        }
+
+        .story-progress-bar {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255,255,255,0.3);
+            z-index: 5;
+        }
+
+        .story-progress-fill {
+            height: 100%;
+            background: #1877f2;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .story-user-info {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .story-user-info img {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: 2px solid #1877f2;
+        }
+
+        .story-user-info span {
+            font-size: 14px;
+            font-weight: 600;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.8);
+        }
+
+        .story-nav-area {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 50%;
+            z-index: 3;
+            cursor: pointer;
+        }
+
+        .story-nav-area.prev {
+            left: 0;
+        }
+
+        .story-nav-area.next {
+            right: 0;
+        }
+
+        .no-posts-message {
+            text-align: center;
+            padding: 40px 20px;
+            color: #65676b;
+            font-size: 16px;
+        }
+
+        .no-posts-message i {
+            font-size: 48px;
+            color: #ced0d4;
+            margin-bottom: 15px;
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -952,8 +860,26 @@
             <i class="fa-solid fa-arrows-rotate"></i>
         </div>
 
-        <!-- Toast Notification -->
         <div class="toast-notification" id="toastNotification"></div>
+
+        <!-- Story Viewer -->
+        <div class="story-viewer-overlay" id="storyViewer">
+            <div class="story-viewer-content" id="storyViewerContent">
+                <div class="story-progress-bar">
+                    <div class="story-progress-fill" id="storyProgress"></div>
+                </div>
+                <div class="story-user-info" id="storyUserInfo">
+                    <img src="" alt="User" id="storyUserAvatar">
+                    <span id="storyUserName">User</span>
+                </div>
+                <button class="story-close-btn" onclick="closeStoryViewer()">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+                <div class="story-nav-area prev" onclick="prevStory()"></div>
+                <div class="story-nav-area next" onclick="nextStory()"></div>
+                <div id="storyMediaContainer"></div>
+            </div>
+        </div>
 
         <div class="fb-header">
             <a href="#" class="fb-logo click-effect" onclick="goHome()">facebook</a>
@@ -967,14 +893,13 @@
         <div class="fb-nav-tabs">
             <button class="nav-tab active click-effect" onclick="switchView('home')">
                 <i class="fa-solid fa-house"></i>
-                <span class="badge">15+</span>
+                <span class="badge" id="notificationBadge">0</span>
             </button>
             <a href="#" class="nav-tab click-effect" onclick="navigateTo('friends')">
                 <i class="fa-solid fa-user-group"></i>
             </a>
             <a href="#" class="nav-tab click-effect" onclick="navigateTo('messenger')">
                 <i class="fa-brands fa-facebook-messenger"></i>
-                <span class="badge">15+</span>
             </a>
             <a href="#" class="nav-tab click-effect" onclick="navigateTo('watch')">
                 <i class="fa-solid fa-tv"></i>
@@ -990,39 +915,15 @@
         <!-- HOME VIEW -->
         <div id="homeView" class="view-section active-view">
             <div class="create-post-section">
-                <a href="#" class="click-effect" onclick="navigateTo('profile')"><img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Profile" class="profile-pic"></a>
+                <a href="#" class="click-effect" onclick="navigateTo('profile')">
+                    <img src="" alt="Profile" class="profile-pic" id="currentUserAvatar">
+                </a>
                 <a href="#" class="post-input-box click-effect" onclick="navigateTo('create-post')">What's on your mind?</a>
                 <a href="#" class="photo-icon-btn click-effect" onclick="navigateTo('create-post')"><i class="fa-solid fa-images"></i></a>
             </div>
 
-            <div class="stories-container">
-                <a href="#" class="story-card create-story click-effect" onclick="openStory('story_1')">
-                    <div class="create-story-top">
-                        <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=200&q=80" alt="My Profile">
-                        <div class="add-story-icon-wrap">
-                            <i class="fa-solid fa-plus"></i>
-                        </div>
-                    </div>
-                    <div class="create-story-bottom">Create story</div>
-                </a>
-
-                <a href="#" class="story-card click-effect" onclick="openStory('story_2')">
-                    <div class="story-badge-num">1</div>
-                    <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=300&q=80" alt="Tiya Saha" class="story-bg">
-                    <div class="story-name">Tiya Saha</div>
-                </a>
-
-                <a href="#" class="story-card click-effect" onclick="openStory('story_3')">
-                    <div class="story-badge-num">1</div>
-                    <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80" alt="Rabby Hasan" class="story-bg">
-                    <div class="story-name">Rabby Hasan</div>
-                </a>
-
-                <a href="#" class="story-card click-effect" onclick="openStory('story_4')">
-                    <div class="story-badge-num">2</div>
-                    <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=300&q=80" alt="Dibos" class="story-bg">
-                    <div class="story-name">Dibos</div>
-                </a>
+            <div class="stories-container" id="storiesContainer">
+                <!-- Stories will be loaded from Firebase -->
             </div>
 
             <div id="feedPostsContainer">
@@ -1042,16 +943,16 @@
                     <h1 class="menu-title">Menu</h1>
                 </div>
                 <div class="menu-top-actions">
-                    <a href="#" class="icon-btn click-effect" onclick="navigateTo('settings')"><i class="fa-solid fa-arrow-right-arrow-left" style="font-size: 14px;"></i></a>
+                    <button class="icon-btn click-effect" onclick="logoutUser()"><i class="fa-solid fa-sign-out-alt" style="font-size: 14px;"></i></button>
                     <a href="#" class="icon-btn click-effect" onclick="navigateTo('search')"><i class="fa-solid fa-magnifying-glass"></i></a>
                 </div>
             </div>
 
             <a href="#" class="menu-card click-effect" onclick="navigateTo('profile')">
                 <div class="profile-card-left">
-                    <img src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80" alt="Shopon" class="menu-profile-pic">
+                    <img src="" alt="User" class="menu-profile-pic" id="menuUserAvatar">
                     <div class="menu-profile-info">
-                        <h4>SHOPON HASAN PRIYO</h4>
+                        <h4 id="menuUserName">User</h4>
                         <p>View your profile</p>
                     </div>
                 </div>
@@ -1062,21 +963,6 @@
                     <div class="dropdown-circle-btn">
                         <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
                     </div>
-                </div>
-            </a>
-
-            <a href="#" class="menu-card click-effect" onclick="navigateTo('switch')">
-                <div class="profile-card-left">
-                    <div class="mini-avatar-stack">
-                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=50&q=80" alt="acc1">
-                        <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=50&q=80" alt="acc2">
-                    </div>
-                    <div class="menu-profile-info">
-                        <h4 style="font-weight: 500;">Switch account</h4>
-                    </div>
-                </div>
-                <div class="dropdown-circle-btn">
-                    <i class="fa-solid fa-chevron-down" style="font-size: 12px;"></i>
                 </div>
             </a>
 
@@ -1164,46 +1050,96 @@
 
         firebase.initializeApp(firebaseConfig);
         const database = firebase.database();
+        const auth = firebase.auth();
 
         let currentUser = {
-            name: 'User',
+            name: '',
             email: '',
             uid: '',
-            userId: 'user_1'
+            avatar: '',
+            userId: ''
         };
 
-        function loadCurrentUser() {
-            const userEmail = localStorage.getItem('userEmail');
-            const userUid = localStorage.getItem('userUid');
-            if (userEmail) {
-                currentUser.email = userEmail;
-                currentUser.uid = userUid || 'anonymous';
-                currentUser.userId = userUid || 'user_1';
-                database.ref('users').once('value').then((snapshot) => {
-                    if (snapshot.exists()) {
-                        snapshot.forEach((child) => {
-                            const usr = child.val();
-                            if (usr.email === userEmail) {
-                                currentUser.name = `${usr.firstName} ${usr.lastName}`;
-                                currentUser.userId = child.key;
-                            }
-                        });
-                    }
-                });
-            }
-        }
-        loadCurrentUser();
-
-        // ============================================================
-        // GLOBAL STATE
-        // ============================================================
         let feedItems = [];
         let displayedCount = 0;
         const batchSize = 10;
         let isLoadingMore = false;
         let allLoaded = false;
         let pressTimer = null;
-        let currentPopupPostId = null;
+        let storyIndex = 0;
+        let storiesData = [];
+        let storyTimer = null;
+        let isFeedLoading = false;
+        let isStoriesLoading = false;
+
+        // ============================================================
+        // AUTHENTICATION - Redirect to login if not logged in
+        // ============================================================
+        function checkAuth() {
+            auth.onAuthStateChanged((user) => {
+                if (user) {
+                    currentUser.uid = user.uid;
+                    currentUser.email = user.email;
+                    loadUserData(user);
+                } else {
+                    window.location.href = 'login.html';
+                }
+            });
+        }
+
+        function loadUserData(user) {
+            const uid = user.uid;
+            database.ref(`users/${uid}`).once('value').then((snapshot) => {
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    currentUser.name = data.name || data.firstName + ' ' + data.lastName || user.displayName || 'User';
+                    currentUser.avatar = data.avatar || data.profilePic || user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=100';
+                    currentUser.userId = uid;
+                    currentUser.email = data.email || user.email;
+                    
+                    updateUserUI();
+                    loadFeed();
+                    loadStories();
+                } else {
+                    // Create user profile
+                    const displayName = user.displayName || 'User';
+                    const userData = {
+                        name: displayName,
+                        email: user.email,
+                        avatar: user.photoURL || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(displayName) + '&background=1877f2&color=fff&size=100',
+                        createdAt: Date.now()
+                    };
+                    database.ref(`users/${uid}`).set(userData).then(() => {
+                        currentUser.name = userData.name;
+                        currentUser.avatar = userData.avatar;
+                        currentUser.userId = uid;
+                        currentUser.email = userData.email;
+                        updateUserUI();
+                        loadFeed();
+                        loadStories();
+                    }).catch((err) => {
+                        console.error('Error creating user:', err);
+                        showToast('Error creating profile', 'error');
+                    });
+                }
+            }).catch((err) => {
+                console.error('Error loading user data:', err);
+                showToast('Error loading profile', 'error');
+            });
+        }
+
+        function updateUserUI() {
+            const avatarUrl = currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=100';
+            document.getElementById('currentUserAvatar').src = avatarUrl;
+            document.getElementById('menuUserAvatar').src = avatarUrl;
+            document.getElementById('menuUserName').textContent = currentUser.name || 'User';
+        }
+
+        function logoutUser() {
+            auth.signOut().then(() => {
+                window.location.href = 'login.html';
+            });
+        }
 
         // ============================================================
         // TOAST NOTIFICATION
@@ -1220,294 +1156,63 @@
         }
 
         // ============================================================
-        // FETCH POSTS FROM FIREBASE
+        // LOAD FEED FROM FIREBASE - FIXED: No recursion
         // ============================================================
-        function fetchFeedFromFirebase(callback) {
-            database.ref('feedItems').once('value')
+        function loadFeed() {
+            if (isFeedLoading) return;
+            isFeedLoading = true;
+            
+            const feedContainer = document.getElementById('feedPostsContainer');
+            feedContainer.innerHTML = '<div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>';
+            
+            database.ref('feedItems').orderByChild('timestamp').once('value')
                 .then((snapshot) => {
                     if (snapshot.exists()) {
                         const items = [];
                         snapshot.forEach((child) => {
                             const data = child.val();
                             data._id = child.key;
-                            if (!data.userId) {
-                                data.userId = 'user_' + Math.random().toString(36).substr(2, 6);
-                            }
                             items.push(data);
                         });
-                        callback(items);
+                        items.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                        feedItems = items;
+                        displayedCount = 0;
+                        allLoaded = false;
+                        feedContainer.innerHTML = '';
+                        loadMorePosts();
                     } else {
-                        seedFirebaseData();
-                        setTimeout(() => {
-                            database.ref('feedItems').once('value').then(s => {
-                                const items = [];
-                                s.forEach(c => {
-                                    const d = c.val();
-                                    d._id = c.key;
-                                    if (!d.userId) {
-                                        d.userId = 'user_' + Math.random().toString(36).substr(2, 6);
-                                    }
-                                    items.push(d);
-                                });
-                                callback(items);
-                            });
-                        }, 1000);
+                        feedContainer.innerHTML = `
+                            <div class="no-posts-message">
+                                <i class="fa-regular fa-newspaper"></i>
+                                <p>No posts yet. Create your first post!</p>
+                            </div>
+                        `;
                     }
+                    isFeedLoading = false;
                 })
                 .catch((error) => {
                     console.error("Firebase fetch error:", error);
                     showToast('Failed to load posts', 'error');
-                    callback([]);
+                    feedContainer.innerHTML = `
+                        <div class="no-posts-message">
+                            <i class="fa-solid fa-triangle-exclamation"></i>
+                            <p>Failed to load posts. Please try again.</p>
+                        </div>
+                    `;
+                    isFeedLoading = false;
                 });
         }
 
-        function seedFirebaseData() {
-            const samplePosts = [
-                {
-                    name: 'Mushfiqur Rahman',
-                    userId: 'user_mushfiq',
-                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-                    time: '1h ago',
-                    caption: '.com domain lagbe. Ke koto dame dite parben janaben please..',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 12,
-                    likesEmoji: '👍',
-                    comments: 4,
-                    shares: 2,
-                    likedBy: {}
-                },
-                {
-                    name: 'SHOPON HASAN PRIYO',
-                    userId: 'user_shopon',
-                    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
-                    time: '2h ago',
-                    caption: 'আজকের দিনটা খুব সুন্দর কাটলো! 🌞',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 45,
-                    likesEmoji: '❤️',
-                    comments: 8,
-                    shares: 5,
-                    likedBy: {}
-                },
-                {
-                    name: 'Nabila Khan',
-                    userId: 'user_nabila',
-                    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
-                    time: '3h ago',
-                    caption: 'বন্ধুদের সাথে সময় কাটানো অনেক মজার। 🎉',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 89,
-                    likesEmoji: '😆',
-                    comments: 15,
-                    shares: 7,
-                    likedBy: {}
-                },
-                {
-                    name: 'Rafi Ahmed',
-                    userId: 'user_rafi',
-                    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
-                    time: '5h ago',
-                    caption: 'নতুন প্রজেক্ট শুরু করলাম! 🚀',
-                    contentType: 'video',
-                    media: 'https://www.w3schools.com/html/mov_bbb.mp4',
-                    poster: 'https://images.unsplash.com/photo-1585829365295-ab7cd400c167?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 234,
-                    likesEmoji: '❤️',
-                    comments: 42,
-                    shares: 18,
-                    likedBy: {}
-                },
-                {
-                    name: 'Tasnim Akter',
-                    userId: 'user_tasnim',
-                    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
-                    time: '6h ago',
-                    caption: 'সকালের কফি আর বই পড়া — পারফেক্ট কম্বো। ☕',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 67,
-                    likesEmoji: '❤️',
-                    comments: 11,
-                    shares: 4,
-                    likedBy: {}
-                },
-                {
-                    name: 'Shakib Hossain',
-                    userId: 'user_shakib',
-                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
-                    time: '8h ago',
-                    caption: 'সমুদ্রের ধারে বসে আছি। 🌊',
-                    contentType: 'image',
-                    media: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
-                    likesCount: 156,
-                    likesEmoji: '❤️',
-                    comments: 23,
-                    shares: 12,
-                    likedBy: {}
-                }
-            ];
-
-            database.ref('feedItems').set(samplePosts);
-        }
-
-        function shuffleArray(array) {
-            let arr = [...array];
-            for (let i = arr.length - 1; i > 0; i--) {
-                const j = Math.floor(Math.random() * (i + 1));
-                [arr[i], arr[j]] = [arr[j], arr[i]];
-            }
-            return arr;
-        }
-
-        // ============================================================
-        // FACEBOOK LIKE REACTION - FIXED
-        // ============================================================
-        function handleReaction(postId, emoji) {
-            const postRef = database.ref(`feedItems/${postId}`);
+        function renderPostBatch(batch, container) {
             const userEmail = currentUser.email || 'anonymous';
-            
-            postRef.once('value').then((snapshot) => {
-                const postData = snapshot.val();
-                if (!postData) return;
-                
-                const likedBy = postData.likedBy || {};
-                let newLikesCount = postData.likesCount || 0;
-                let newEmoji = postData.likesEmoji || '👍';
-                
-                // Toggle like
-                if (likedBy[userEmail]) {
-                    // Unlike
-                    delete likedBy[userEmail];
-                    newLikesCount = Math.max(0, newLikesCount - 1);
-                    
-                    // Find most used emoji
-                    const emojiCounts = {};
-                    Object.values(likedBy).forEach(e => {
-                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
-                    });
-                    let maxCount = 0;
-                    for (const [e, count] of Object.entries(emojiCounts)) {
-                        if (count > maxCount) {
-                            maxCount = count;
-                            newEmoji = e;
-                        }
-                    }
-                    if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
-                } else {
-                    // Like with emoji
-                    likedBy[userEmail] = emoji || '👍';
-                    newLikesCount += 1;
-                    
-                    // Find most used emoji
-                    const emojiCounts = {};
-                    Object.values(likedBy).forEach(e => {
-                        emojiCounts[e] = (emojiCounts[e] || 0) + 1;
-                    });
-                    let maxCount = 0;
-                    for (const [e, count] of Object.entries(emojiCounts)) {
-                        if (count > maxCount) {
-                            maxCount = count;
-                            newEmoji = e;
-                        }
-                    }
-                }
-                
-                postRef.update({
-                    likesCount: newLikesCount,
-                    likesEmoji: newEmoji,
-                    likedBy: likedBy
-                }).then(() => {
-                    updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
-                    // Close popup after reaction
-                    const popup = document.getElementById(`reactionPopup-${postId}`);
-                    if (popup) popup.classList.remove('show');
-                });
-            }).catch((error) => {
-                console.error('Reaction error:', error);
-                showToast('Failed to update like', 'error');
-            });
-        }
-
-        function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
-            const statCount = document.getElementById(`statCount-${postId}`);
-            const statIcons = document.getElementById(`statIcons-${postId}`);
-            if (statCount) statCount.textContent = newLikesCount;
-            if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
-            
-            const btnIcon = document.getElementById(`btnIcon-${postId}`);
-            const btnText = document.getElementById(`btnText-${postId}`);
-            const likeBtn = document.getElementById(`likeBtn-${postId}`);
-            
-            if (btnText && btnIcon && likeBtn) {
-                if (userReaction) {
-                    btnIcon.innerHTML = userReaction;
-                    btnText.textContent = 'Liked';
-                    likeBtn.classList.add('liked');
-                } else {
-                    btnIcon.innerHTML = '<i class="fa-regular fa-thumbs-up"></i>';
-                    btnText.textContent = 'Like';
-                    likeBtn.classList.remove('liked');
-                }
-            }
-        }
-
-        // ============================================================
-        // RENDER FEED
-        // ============================================================
-        function renderFeed() {
-            const feedContainer = document.getElementById('feedPostsContainer');
-            feedContainer.innerHTML = '<div class="feed-loader"><i class="fa-solid fa-spinner"></i> Loading feed...</div>';
-            
-            fetchFeedFromFirebase((items) => {
-                feedItems = shuffleArray(items);
-                displayedCount = 0;
-                allLoaded = false;
-                feedContainer.innerHTML = '';
-                loadMorePosts();
-            });
-        }
-
-        function loadMorePosts() {
-            if (isLoadingMore) return;
-            if (allLoaded) {
-                updateLoadMoreState();
-                return;
-            }
-            
-            isLoadingMore = true;
-            
-            const trigger = document.getElementById('scrollTrigger');
-            const loadMoreText = document.getElementById('loadMoreText');
-            const loaderSpinner = trigger.querySelector('.loader-spinner');
-            
-            if (loadMoreText) loadMoreText.textContent = 'Loading...';
-            if (loaderSpinner) loaderSpinner.style.display = 'inline-block';
-
-            const feedContainer = document.getElementById('feedPostsContainer');
-            
-            if (displayedCount >= feedItems.length) {
-                allLoaded = true;
-                isLoadingMore = false;
-                updateLoadMoreState();
-                return;
-            }
-
-            const endIndex = Math.min(displayedCount + batchSize, feedItems.length);
-            const batch = feedItems.slice(displayedCount, endIndex);
-            displayedCount = endIndex;
-
             let htmlContent = '';
-            const userEmail = currentUser.email || 'anonymous';
 
             batch.forEach((item) => {
                 if (!item) return;
 
-                const postId = item._id || 'post_' + Math.random().toString(36).substr(2, 6);
+                const postId = item._id;
                 const postName = item.name || 'User';
-                const userId = item.userId || 'user_' + Math.random().toString(36).substr(2, 6);
+                const userId = item.userId || 'unknown';
                 const postCaption = item.caption || '';
                 const likesCount = item.likesCount || 0;
                 const likesEmoji = item.likesEmoji || '👍';
@@ -1531,11 +1236,12 @@
                 }
 
                 const commentsText = commentsCount + ' comment' + (commentsCount !== 1 ? 's' : '');
+                const avatarUrl = item.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(postName) + '&background=1877f2&color=fff&size=100';
 
                 let mediaHTML = '';
                 if (item.contentType === 'video' && item.media) {
                     mediaHTML = `
-                        <div class="post-media-content" onclick="event.stopPropagation();">
+                        <div class="post-media-content" onclick="event.stopPropagation();openPostDetail('${postId}')">
                             <video controls class="feed-video" poster="${item.poster || ''}" preload="metadata" playsinline>
                                 <source src="${item.media}" type="video/mp4">
                                 Your browser does not support video.
@@ -1545,7 +1251,7 @@
                 } else if (item.contentType === 'image' && item.media) {
                     mediaHTML = `
                         <a href="#" class="post-media-content click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
-                            <img src="${item.media}" alt="Post media" loading="lazy">
+                            <img src="${item.media}" alt="Post media" loading="lazy" onerror="this.src='https://via.placeholder.com/600x400/1877f2/ffffff?text=Image+Not+Available'">
                         </a>
                     `;
                 }
@@ -1556,7 +1262,7 @@
                             <div class="post-user-info">
                                 <div class="post-avatar-wrap">
                                     <a href="#" class="click-effect" onclick="event.stopPropagation();openUserProfile('${userId}')">
-                                        <img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic">
+                                        <img src="${avatarUrl}" alt="User" class="profile-pic" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(postName)}&background=1877f2&color=fff&size=100'">
                                     </a>
                                     <div class="online-dot"></div>
                                 </div>
@@ -1569,7 +1275,7 @@
                             </div>
                             <div class="post-actions-right" onclick="event.stopPropagation();">
                                 <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Options menu')"><i class="fa-solid fa-ellipsis"></i></a>
-                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();showToast('Post hidden')"><i class="fa-solid fa-xmark"></i></a>
+                                <a href="#" style="color: inherit;" class="click-effect" onclick="event.stopPropagation();hidePost('${postId}')"><i class="fa-solid fa-xmark"></i></a>
                             </div>
                         </div>
 
@@ -1619,8 +1325,40 @@
                 `;
             });
 
-            feedContainer.innerHTML += htmlContent;
+            container.innerHTML += htmlContent;
             initIntersectionVideoObserver();
+        }
+
+        function loadMorePosts() {
+            if (isLoadingMore) return;
+            if (allLoaded) {
+                updateLoadMoreState();
+                return;
+            }
+            
+            isLoadingMore = true;
+            
+            const trigger = document.getElementById('scrollTrigger');
+            const loadMoreText = document.getElementById('loadMoreText');
+            const loaderSpinner = trigger.querySelector('.loader-spinner');
+            
+            if (loadMoreText) loadMoreText.textContent = 'Loading...';
+            if (loaderSpinner) loaderSpinner.style.display = 'inline-block';
+
+            const feedContainer = document.getElementById('feedPostsContainer');
+            
+            if (displayedCount >= feedItems.length) {
+                allLoaded = true;
+                isLoadingMore = false;
+                updateLoadMoreState();
+                return;
+            }
+
+            const endIndex = Math.min(displayedCount + batchSize, feedItems.length);
+            const batch = feedItems.slice(displayedCount, endIndex);
+            displayedCount = endIndex;
+
+            renderPostBatch(batch, feedContainer);
             updateLoadMoreState();
 
             if (displayedCount >= feedItems.length) {
@@ -1647,6 +1385,264 @@
                 if (loaderSpinner) loaderSpinner.style.display = 'none';
             }
         }
+
+        function hidePost(postId) {
+            database.ref(`feedItems/${postId}`).remove().then(() => {
+                showToast('Post hidden');
+                const postElement = document.querySelector(`.post-container[data-id="${postId}"]`);
+                if (postElement) postElement.remove();
+                feedItems = feedItems.filter(item => item._id !== postId);
+            }).catch(() => {
+                showToast('Failed to hide post', 'error');
+            });
+        }
+
+        // ============================================================
+        // FACEBOOK LIKE REACTION - FIXED with better error handling
+        // ============================================================
+        function handleReaction(postId, emoji) {
+            if (!postId) {
+                showToast('Error: Post not found', 'error');
+                return;
+            }
+
+            const postRef = database.ref(`feedItems/${postId}`);
+            const userEmail = currentUser.email || 'anonymous';
+            
+            postRef.once('value')
+                .then((snapshot) => {
+                    if (!snapshot.exists()) {
+                        showToast('Post not found', 'error');
+                        return;
+                    }
+                    
+                    const postData = snapshot.val();
+                    if (!postData) return;
+                    
+                    const likedBy = postData.likedBy || {};
+                    let newLikesCount = postData.likesCount || 0;
+                    let newEmoji = postData.likesEmoji || '👍';
+                    
+                    if (likedBy[userEmail]) {
+                        delete likedBy[userEmail];
+                        newLikesCount = Math.max(0, newLikesCount - 1);
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
+                        }
+                        if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
+                    } else {
+                        likedBy[userEmail] = emoji || '👍';
+                        newLikesCount += 1;
+                        
+                        const emojiCounts = {};
+                        Object.values(likedBy).forEach(e => {
+                            emojiCounts[e] = (emojiCounts[e] || 0) + 1;
+                        });
+                        let maxCount = 0;
+                        for (const [e, count] of Object.entries(emojiCounts)) {
+                            if (count > maxCount) {
+                                maxCount = count;
+                                newEmoji = e;
+                            }
+                        }
+                    }
+                    
+                    // Update UI immediately (optimistic)
+                    updatePostUI(postId, newLikesCount, newEmoji, likedBy[userEmail] || null);
+                    
+                    // Close popup
+                    const popup = document.getElementById(`reactionPopup-${postId}`);
+                    if (popup) popup.classList.remove('show');
+                    
+                    // Save to Firebase
+                    postRef.update({
+                        likesCount: newLikesCount,
+                        likesEmoji: newEmoji,
+                        likedBy: likedBy
+                    }).catch((err) => {
+                        console.error('Firebase update error:', err);
+                        showToast('Failed to save like', 'error');
+                    });
+                })
+                .catch((error) => {
+                    console.error('Reaction error:', error);
+                    showToast('Failed to update like', 'error');
+                });
+        }
+
+        function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
+            const statCount = document.getElementById(`statCount-${postId}`);
+            const statIcons = document.getElementById(`statIcons-${postId}`);
+            if (statCount) statCount.textContent = newLikesCount;
+            if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
+            
+            const btnIcon = document.getElementById(`btnIcon-${postId}`);
+            const btnText = document.getElementById(`btnText-${postId}`);
+            const likeBtn = document.getElementById(`likeBtn-${postId}`);
+            
+            if (btnText && btnIcon && likeBtn) {
+                if (userReaction) {
+                    btnIcon.innerHTML = userReaction;
+                    btnText.textContent = 'Liked';
+                    likeBtn.classList.add('liked');
+                } else {
+                    btnIcon.innerHTML = '<i class="fa-regular fa-thumbs-up"></i>';
+                    btnText.textContent = 'Like';
+                    likeBtn.classList.remove('liked');
+                }
+            }
+        }
+
+        // ============================================================
+        // LOAD STORIES FROM FIREBASE - FIXED: No recursion
+        // ============================================================
+        function loadStories() {
+            if (isStoriesLoading) return;
+            isStoriesLoading = true;
+            
+            const container = document.getElementById('storiesContainer');
+            
+            database.ref('stories').orderByChild('timestamp').once('value')
+                .then((snapshot) => {
+                    if (snapshot.exists()) {
+                        const stories = [];
+                        snapshot.forEach((child) => {
+                            const data = child.val();
+                            data._id = child.key;
+                            stories.push(data);
+                        });
+                        stories.sort((a, b) => (b.timestamp || 0) - (a.timestamp || 0));
+                        storiesData = stories;
+                        renderStories(stories);
+                    } else {
+                        renderStories([]);
+                    }
+                    isStoriesLoading = false;
+                })
+                .catch((error) => {
+                    console.error('Error loading stories:', error);
+                    renderStories([]);
+                    isStoriesLoading = false;
+                });
+        }
+
+        function renderStories(stories) {
+            const container = document.getElementById('storiesContainer');
+            let html = `
+                <a href="#" class="story-card create-story click-effect" onclick="navigateTo('create-story')">
+                    <div class="create-story-top">
+                        <img src="${currentUser.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(currentUser.name) + '&background=1877f2&color=fff&size=200'}" alt="My Profile">
+                        <div class="add-story-icon-wrap">
+                            <i class="fa-solid fa-plus"></i>
+                        </div>
+                    </div>
+                    <div class="create-story-bottom">Create story</div>
+                </a>
+            `;
+
+            stories.forEach((story, index) => {
+                const avatarUrl = story.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.name || 'User') + '&background=1877f2&color=fff&size=100';
+                html += `
+                    <a href="#" class="story-card click-effect" onclick="openStoryViewer(${index})">
+                        <img src="${story.media || 'https://via.placeholder.com/300x400/1877f2/ffffff?text=Story'}" alt="${story.name || 'User'}" class="story-bg">
+                        <div class="story-name">${story.name || 'User'}</div>
+                    </a>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        // ============================================================
+        // STORY VIEWER
+        // ============================================================
+        function openStoryViewer(index) {
+            storyIndex = index;
+            const viewer = document.getElementById('storyViewer');
+            viewer.classList.add('active');
+            showStory(index);
+        }
+
+        function showStory(index) {
+            if (index < 0 || index >= storiesData.length) {
+                closeStoryViewer();
+                return;
+            }
+
+            const story = storiesData[index];
+            const container = document.getElementById('storyMediaContainer');
+            
+            document.getElementById('storyUserAvatar').src = story.avatar || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(story.name || 'User') + '&background=1877f2&color=fff&size=100';
+            document.getElementById('storyUserName').textContent = story.name || 'User';
+
+            if (story.contentType === 'video') {
+                container.innerHTML = `
+                    <video controls autoplay playsinline style="max-width:100%;max-height:100vh;object-fit:contain;">
+                        <source src="${story.media}" type="video/mp4">
+                    </video>
+                `;
+            } else {
+                container.innerHTML = `
+                    <img src="${story.media}" alt="Story" style="max-width:100%;max-height:100vh;object-fit:contain;">
+                `;
+            }
+
+            const progress = document.getElementById('storyProgress');
+            progress.style.width = '0%';
+            
+            clearTimeout(storyTimer);
+            let progressValue = 0;
+            storyTimer = setInterval(() => {
+                progressValue += 2;
+                progress.style.width = progressValue + '%';
+                if (progressValue >= 100) {
+                    clearInterval(storyTimer);
+                    setTimeout(() => {
+                        nextStory();
+                    }, 300);
+                }
+            }, 100);
+        }
+
+        function nextStory() {
+            if (storyIndex < storiesData.length - 1) {
+                storyIndex++;
+                showStory(storyIndex);
+            } else {
+                closeStoryViewer();
+            }
+        }
+
+        function prevStory() {
+            if (storyIndex > 0) {
+                storyIndex--;
+                showStory(storyIndex);
+            }
+        }
+
+        function closeStoryViewer() {
+            const viewer = document.getElementById('storyViewer');
+            viewer.classList.remove('active');
+            clearTimeout(storyTimer);
+            document.getElementById('storyMediaContainer').innerHTML = '';
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (document.getElementById('storyViewer').classList.contains('active')) {
+                if (e.key === 'ArrowRight') nextStory();
+                if (e.key === 'ArrowLeft') prevStory();
+                if (e.key === 'Escape') closeStoryViewer();
+            }
+        });
 
         // ============================================================
         // INFINITE SCROLL
@@ -1677,9 +1673,8 @@
         }
 
         // ============================================================
-        // NAVIGATION FUNCTIONS - FIXED: No error.html redirect
+        // NAVIGATION FUNCTIONS
         // ============================================================
-        
         function goHome() {
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
@@ -1697,7 +1692,6 @@
                 window.scrollTo(0, savedPos);
             }, 50);
             
-            // Update URL without navigation
             history.pushState({ page: 'home', scrollY: window.scrollY }, '', '#home');
         }
 
@@ -1742,14 +1736,12 @@
         function navigateTo(page, event) {
             if (event) event.preventDefault();
             
-            // Save current scroll position
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('lastPage', 'home');
             sessionStorage.setItem('navigateTo', page);
             
-            // Don't redirect to error.html - show toast and stay on page
             if (page !== 'home') {
-                showToast(`📱 ${page} page (demo)`);
+                showToast(`📱 ${page} page (Coming soon)`);
                 history.pushState({ page: page, scrollY: window.scrollY }, '', `#${page}`);
             } else {
                 goHome();
@@ -1757,63 +1749,47 @@
         }
 
         // ============================================================
-        // USER PROFILE - Opens profile.html with userId
+        // USER PROFILE
         // ============================================================
         function openUserProfile(userId) {
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('userId', userId);
             sessionStorage.setItem('lastPage', 'home');
-            // Open profile.html - this is expected behavior
             window.location.href = 'profile.html';
         }
 
         // ============================================================
-        // POST DETAIL - Opens open.html with postId
+        // POST DETAIL
         // ============================================================
         function openPostDetail(postId) {
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToOpen', postId);
             sessionStorage.setItem('lastPage', 'home');
-            // Open open.html - this is expected behavior
             window.location.href = 'open.html';
         }
 
         // ============================================================
-        // SHARE POST - Opens share.html with postId
+        // SHARE POST
         // ============================================================
         function sharePost(postId) {
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToShare', postId);
             sessionStorage.setItem('lastPage', 'home');
-            // Open share.html - this is expected behavior
             window.location.href = 'share.html';
         }
 
         // ============================================================
-        // STORY - Opens view-story.html
-        // ============================================================
-        function openStory(storyId) {
-            sessionStorage.setItem('homeScrollPosition', window.scrollY);
-            sessionStorage.setItem('storyToView', storyId);
-            sessionStorage.setItem('lastPage', 'home');
-            // Open view-story.html - this is expected behavior
-            window.location.href = 'view-story.html';
-        }
-
-        // ============================================================
-        // LONG PRESS FOR REACTION POPUP - FIXED
+        // LONG PRESS FOR REACTION POPUP
         // ============================================================
         function startLongPress(postId) {
             if (pressTimer) clearTimeout(pressTimer);
             pressTimer = setTimeout(() => {
                 const popup = document.getElementById(`reactionPopup-${postId}`);
                 if (popup) {
-                    // Close any other open popups
                     document.querySelectorAll('.reaction-popup').forEach(p => {
                         if (p.id !== `reactionPopup-${postId}`) p.classList.remove('show');
                     });
                     popup.classList.add('show');
-                    currentPopupPostId = postId;
                 }
             }, 500);
         }
@@ -1821,14 +1797,12 @@
         function cancelLongPress(postId) {
             clearTimeout(pressTimer);
             pressTimer = null;
-            // Don't close immediately - let user select reaction
         }
 
         // ============================================================
-        // CLOSE POPUPS ON CLICK OUTSIDE - FIXED
+        // CLOSE POPUPS ON CLICK OUTSIDE
         // ============================================================
         document.addEventListener('click', function(e) {
-            // Check if click is outside reaction popups and action buttons
             const isPopupClick = e.target.closest('.reaction-popup');
             const isActionBtn = e.target.closest('.action-btn');
             const isReactionIcon = e.target.closest('.reaction-icon');
@@ -1837,7 +1811,6 @@
                 document.querySelectorAll('.reaction-popup').forEach(popup => {
                     popup.classList.remove('show');
                 });
-                currentPopupPostId = null;
             }
         });
 
@@ -1914,7 +1887,8 @@
                 document.querySelectorAll('.feed-video').forEach(v => v.pause());
                 
                 setTimeout(() => {
-                    renderFeed();
+                    loadFeed();
+                    loadStories();
                     refreshIndicator.classList.remove('spinning');
                     refreshIndicator.style.opacity = 0;
                     refreshIndicator.style.transform = `translateX(-50%) translateY(-50px)`;
@@ -1928,43 +1902,33 @@
         });
 
         // ============================================================
-        // BACK BUTTON HANDLER - FIXED: Scroll position saved
+        // BACK BUTTON HANDLER
         // ============================================================
-        let isBackNavigation = false;
-
         window.addEventListener('popstate', function(e) {
-            isBackNavigation = true;
-            
             const homeView = document.getElementById('homeView');
             const menuView = document.getElementById('menuView');
-            const navTabs = document.querySelectorAll('.fb-nav-tabs .nav-tab');
             
-            // Restore scroll position from sessionStorage
             const savedPos = parseInt(sessionStorage.getItem('homeScrollPosition') || '0');
             
-            // If we're coming back to home
             if (!menuView.classList.contains('active-view')) {
                 homeView.classList.add('active-view');
                 menuView.classList.remove('active-view');
-                navTabs.forEach((tab, index) => {
+                document.querySelectorAll('.fb-nav-tabs .nav-tab').forEach((tab, index) => {
                     if (index === 0) tab.classList.add('active');
                     else tab.classList.remove('active');
                 });
                 
-                // Restore scroll position
                 setTimeout(() => {
                     window.scrollTo(0, savedPos);
                 }, 100);
             } else {
-                // We're in menu, go to home
                 goHome();
             }
             
-            // Close any open popups
             document.querySelectorAll('.reaction-popup').forEach(p => p.classList.remove('show'));
         });
 
-        // Save scroll position on scroll
+        // Save scroll position
         let scrollTimeout;
         window.addEventListener('scroll', function() {
             clearTimeout(scrollTimeout);
@@ -1976,7 +1940,7 @@
         });
 
         // ============================================================
-        // LIVE UPDATES (cross-device sync)
+        // LIVE UPDATES - FIXED: No recursive calls
         // ============================================================
         database.ref('feedItems').on('child_changed', (snapshot) => {
             const data = snapshot.val();
@@ -1987,10 +1951,40 @@
             updatePostUI(postId, data.likesCount || 0, data.likesEmoji || '👍', userReaction);
         });
 
+        database.ref('feedItems').on('child_added', (snapshot) => {
+            if (!isFeedLoading) {
+                const newPost = snapshot.val();
+                newPost._id = snapshot.key;
+                
+                const exists = feedItems.some(item => item._id === newPost._id);
+                if (!exists) {
+                    feedItems.unshift(newPost);
+                    
+                    if (displayedCount < feedItems.length && feedItems.length > 0) {
+                        const feedContainer = document.getElementById('feedPostsContainer');
+                        if (displayedCount < batchSize) {
+                            const firstBatch = feedItems.slice(0, batchSize);
+                            displayedCount = batchSize;
+                            feedContainer.innerHTML = '';
+                            renderPostBatch(firstBatch, feedContainer);
+                        }
+                    }
+                }
+            }
+        });
+
+        database.ref('stories').on('child_added', () => {
+            if (!isStoriesLoading) {
+                loadStories();
+            }
+        });
+
         // ============================================================
         // INIT
         // ============================================================
         window.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            
             const lastPage = sessionStorage.getItem('lastPage');
             if (lastPage === 'home') {
                 const pos = sessionStorage.getItem('homeScrollPosition');
@@ -2009,11 +2003,9 @@
                 }
             }
             
-            renderFeed();
             setTimeout(setupInfiniteScroll, 500);
         });
 
-        // Push initial state
         history.pushState({ page: 'home' }, '', '#home');
     </script>
 </body>
