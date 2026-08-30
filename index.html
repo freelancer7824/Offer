@@ -1139,7 +1139,8 @@
         let currentUser = {
             name: 'User',
             email: '',
-            uid: ''
+            uid: '',
+            userId: 'user_1'
         };
 
         function loadCurrentUser() {
@@ -1148,12 +1149,14 @@
             if (userEmail) {
                 currentUser.email = userEmail;
                 currentUser.uid = userUid || 'anonymous';
+                currentUser.userId = userUid || 'user_1';
                 database.ref('users').once('value').then((snapshot) => {
                     if (snapshot.exists()) {
                         snapshot.forEach((child) => {
                             const usr = child.val();
                             if (usr.email === userEmail) {
                                 currentUser.name = `${usr.firstName} ${usr.lastName}`;
+                                currentUser.userId = child.key;
                             }
                         });
                     }
@@ -1182,6 +1185,10 @@
                         snapshot.forEach((child) => {
                             const data = child.val();
                             data._id = child.key;
+                            // Generate unique IDs for user if not exists
+                            if (!data.userId) {
+                                data.userId = 'user_' + Math.random().toString(36).substr(2, 6);
+                            }
                             items.push(data);
                         });
                         callback(items);
@@ -1193,6 +1200,9 @@
                                 s.forEach(c => {
                                     const d = c.val();
                                     d._id = c.key;
+                                    if (!d.userId) {
+                                        d.userId = 'user_' + Math.random().toString(36).substr(2, 6);
+                                    }
                                     items.push(d);
                                 });
                                 callback(items);
@@ -1210,6 +1220,7 @@
             const samplePosts = [
                 {
                     name: 'Mushfiqur Rahman',
+                    userId: 'user_mushfiq',
                     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
                     time: '1h ago',
                     caption: '.com domain lagbe. Ke koto dame dite parben janaben please..',
@@ -1223,6 +1234,7 @@
                 },
                 {
                     name: 'SHOPON HASAN PRIYO',
+                    userId: 'user_shopon',
                     avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80',
                     time: '2h ago',
                     caption: 'আজকের দিনটা খুব সুন্দর কাটলো! 🌞',
@@ -1236,6 +1248,7 @@
                 },
                 {
                     name: 'Nabila Khan',
+                    userId: 'user_nabila',
                     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80',
                     time: '3h ago',
                     caption: 'বন্ধুদের সাথে সময় কাটানো অনেক মজার। 🎉',
@@ -1249,6 +1262,7 @@
                 },
                 {
                     name: 'Rafi Ahmed',
+                    userId: 'user_rafi',
                     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=100&q=80',
                     time: '5h ago',
                     caption: 'নতুন প্রজেক্ট শুরু করলাম! 🚀',
@@ -1263,6 +1277,7 @@
                 },
                 {
                     name: 'Tasnim Akter',
+                    userId: 'user_tasnim',
                     avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=100&q=80',
                     time: '6h ago',
                     caption: 'সকালের কফি আর বই পড়া — পারফেক্ট কম্বো। ☕',
@@ -1272,6 +1287,20 @@
                     likesEmoji: '❤️',
                     comments: 11,
                     shares: 4,
+                    likedBy: {}
+                },
+                {
+                    name: 'Shakib Hossain',
+                    userId: 'user_shakib',
+                    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&q=80',
+                    time: '8h ago',
+                    caption: 'সমুদ্রের ধারে বসে আছি। 🌊',
+                    contentType: 'image',
+                    media: 'https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=600&q=80',
+                    likesCount: 156,
+                    likesEmoji: '❤️',
+                    comments: 23,
+                    shares: 12,
                     likedBy: {}
                 }
             ];
@@ -1289,7 +1318,7 @@
         }
 
         // ============================================================
-        // FACEBOOK LIKE REACTION - REAL FACEBOOK LOGIC
+        // FACEBOOK LIKE REACTION
         // ============================================================
         function handleReaction(postId, emoji) {
             const postRef = database.ref(`feedItems/${postId}`);
@@ -1303,13 +1332,10 @@
                 let newLikesCount = postData.likesCount || 0;
                 let newEmoji = postData.likesEmoji || '👍';
                 
-                // Facebook Logic: If user already reacted, remove reaction (toggle)
                 if (likedBy[userEmail]) {
-                    // User already reacted - Remove reaction (Unlike)
                     delete likedBy[userEmail];
                     newLikesCount = Math.max(0, newLikesCount - 1);
                     
-                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1323,11 +1349,9 @@
                     }
                     if (Object.keys(emojiCounts).length === 0) newEmoji = '👍';
                 } else {
-                    // User hasn't reacted - Add reaction (Like)
                     likedBy[userEmail] = emoji || '👍';
                     newLikesCount += 1;
                     
-                    // Find most used emoji
                     const emojiCounts = {};
                     Object.values(likedBy).forEach(e => {
                         emojiCounts[e] = (emojiCounts[e] || 0) + 1;
@@ -1341,7 +1365,6 @@
                     }
                 }
                 
-                // Update Firebase
                 postRef.update({
                     likesCount: newLikesCount,
                     likesEmoji: newEmoji,
@@ -1353,13 +1376,11 @@
         }
 
         function updatePostUI(postId, newLikesCount, newEmoji, userReaction) {
-            // Update stats
             const statCount = document.getElementById(`statCount-${postId}`);
             const statIcons = document.getElementById(`statIcons-${postId}`);
             if (statCount) statCount.textContent = newLikesCount;
             if (statIcons) statIcons.innerHTML = `<span>${newEmoji}</span>`;
             
-            // Update like button
             const btnIcon = document.getElementById(`btnIcon-${postId}`);
             const btnText = document.getElementById(`btnText-${postId}`);
             const likeBtn = document.getElementById(`likeBtn-${postId}`);
@@ -1430,6 +1451,7 @@
 
                 const postId = item._id || 'post_' + Math.random().toString(36).substr(2, 6);
                 const postName = item.name || 'User';
+                const userId = item.userId || 'user_' + Math.random().toString(36).substr(2, 6);
                 const postCaption = item.caption || '';
                 const likesCount = item.likesCount || 0;
                 const likesEmoji = item.likesEmoji || '👍';
@@ -1477,11 +1499,15 @@
                         <div class="post-header" onclick="event.stopPropagation();">
                             <div class="post-user-info">
                                 <div class="post-avatar-wrap">
-                                    <a href="#" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic"></a>
+                                    <a href="#" class="click-effect" onclick="event.stopPropagation();openUserProfile('${userId}')">
+                                        <img src="${item.avatar || 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&q=80'}" alt="User" class="profile-pic">
+                                    </a>
                                     <div class="online-dot"></div>
                                 </div>
                                 <div class="post-author-details">
-                                    <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();navigateTo('profile')"><h4>${postName}</h4></a>
+                                    <a href="#" style="text-decoration: none; color: inherit;" class="click-effect" onclick="event.stopPropagation();openUserProfile('${userId}')">
+                                        <h4>${postName}</h4>
+                                    </a>
                                     <div class="post-time-privacy"><span>${item.time || 'Just now'}</span> • <i class="fa-solid fa-earth-americas" style="font-size: 10px;"></i></div>
                                 </div>
                             </div>
@@ -1524,7 +1550,7 @@
                             <button class="action-btn click-effect" onclick="event.stopPropagation();openPostDetail('${postId}')">
                                 <i class="fa-regular fa-comment"></i> Comment
                             </button>
-                            <button class="action-btn click-effect" onclick="event.stopPropagation();navigateTo('share')">
+                            <button class="action-btn click-effect" onclick="event.stopPropagation();sharePost('${postId}')">
                                 <i class="fa-solid fa-share"></i> Share
                             </button>
                         </div>
@@ -1662,13 +1688,33 @@
         }
 
         // ============================================================
-        // POST DETAIL - Opens open.html
+        // USER PROFILE - Opens profile.html with userId
+        // ============================================================
+        function openUserProfile(userId) {
+            sessionStorage.setItem('homeScrollPosition', window.scrollY);
+            sessionStorage.setItem('userId', userId);
+            sessionStorage.setItem('lastPage', 'home');
+            window.location.href = 'profile.html';
+        }
+
+        // ============================================================
+        // POST DETAIL - Opens open.html with postId
         // ============================================================
         function openPostDetail(postId) {
             sessionStorage.setItem('homeScrollPosition', window.scrollY);
             sessionStorage.setItem('postToOpen', postId);
             sessionStorage.setItem('lastPage', 'home');
             window.location.href = 'open.html';
+        }
+
+        // ============================================================
+        // SHARE POST - Opens share.html with postId
+        // ============================================================
+        function sharePost(postId) {
+            sessionStorage.setItem('homeScrollPosition', window.scrollY);
+            sessionStorage.setItem('postToShare', postId);
+            sessionStorage.setItem('lastPage', 'home');
+            window.location.href = 'share.html';
         }
 
         // ============================================================
